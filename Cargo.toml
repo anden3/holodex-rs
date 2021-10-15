@@ -14,11 +14,34 @@ categories = ["api-bindings"]
 
 [dependencies]
 
+[dependencies.chrono]
+version = "0.4.19"
+default_features = false
+features = ["std", "serde"]
+
 [dependencies.miette]
 version = "3.1.0"
 
 [dependencies.reqwest]
 version = "0.11.5"
+
+[dependencies.serde]
+version = "1.0.130"
+features = ["derive"]
+
+[dependencies.serde_json]
+version = "1.0.59"
+
+[dependencies.serde_with]
+version = "1.10.0"
+features = ["macros"]
+
+[dependencies.serde-enum-str]
+version = "0.2.4"
+
+[dependencies.strum]
+version = "0.22"
+features = ["derive"]
 
 [dependencies.thiserror]
 version = "1.0.30"

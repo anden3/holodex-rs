@@ -58,4 +58,8 @@
 
 mod client;
 pub mod errors;
+mod model;
+mod util;
+
 pub use client::Client;
+pub use model::*;
