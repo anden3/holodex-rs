@@ -55,3 +55,7 @@
 )]
 
 //! Rust wrapper for the Holodex v2 API.
+
+mod client;
+pub mod errors;
+pub use client::Client;
