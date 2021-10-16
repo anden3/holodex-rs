@@ -258,6 +258,124 @@ impl Client {
         Ok(channel)
     }
 
+    /// Get a single video's metadata.
+    ///
+    /// # Examples
+    ///
+    /// Find songs from Coco's graduation stream :(
+    /// ```rust
+    /// # fn main() -> Result<(), holodex::errors::Error> {
+    /// # tokio_test::block_on(async {
+    /// # if std::env::var_os("HOLODEX_API_TOKEN").is_none() {
+    /// #   std::env::set_var("HOLODEX_API_TOKEN", "my-api-token");
+    /// # }
+    /// let token = std::env::var("HOLODEX_API_TOKEN").unwrap();
+    /// let client = holodex::Client::new(&token)?;
+    ///
+    /// let coco_graduation = "IhiievWaZMI".into();
+    /// let metadata = client.video(&coco_graduation).await?;
+    ///
+    /// for song in &metadata.songs {
+    ///     println!("{}", song);
+    /// }
+    ///
+    /// # Ok(())
+    /// # })
+    /// # }
+    /// ```
+    ///
+    /// # Errors
+    /// Will return [`Error::ApiRequestFailed`] if sending the API request fails.
+    ///
+    /// Will return [`Error::InvalidResponse`] if the API returned a faulty response or server error.
+    pub async fn video(&self, video_id: &VideoId) -> Result<VideoFull, Error> {
+        self.get_video::<()>(video_id, None).await
+    }
+
+    /// Get a single video's metadata, along with any indexed comments containing timestamps.
+    ///
+    /// # Examples
+    ///
+    /// Find all timestamps for Ollie's birthday stream (in 2021).
+    /// ```rust
+    /// # fn main() -> Result<(), holodex::errors::Error> {
+    /// # tokio_test::block_on(async {
+    /// # if std::env::var_os("HOLODEX_API_TOKEN").is_none() {
+    /// #   std::env::set_var("HOLODEX_API_TOKEN", "my-api-token");
+    /// # }
+    /// let token = std::env::var("HOLODEX_API_TOKEN").unwrap();
+    /// let client = holodex::Client::new(&token)?;
+    ///
+    /// let ollie_birthday = "v6o7LBrQs-I".into();
+    /// let metadata = client.video_with_timestamps(&ollie_birthday).await?;
+    ///
+    /// for comment in &metadata.comments {
+    ///     println!("{}", comment);
+    /// }
+    ///
+    /// # Ok(())
+    /// # })
+    /// # }
+    /// ```
+    ///
+    /// # Errors
+    /// Will return [`Error::ApiRequestFailed`] if sending the API request fails.
+    ///
+    /// Will return [`Error::InvalidResponse`] if the API returned a faulty response or server error.
+    pub async fn video_with_timestamps(&self, video_id: &VideoId) -> Result<VideoFull, Error> {
+        self.get_video(video_id, Some(&[("c", "1")])).await
+    }
+
+    /// Get a single video's metadata, along with any recommended videos in languages matching the given filter.
+    ///
+    /// # Examples
+    ///
+    /// Get English videos related to Korone's birthday stream (2021).
+    /// ```no_run
+    /// # fn main() -> Result<(), holodex::errors::Error> {
+    /// # tokio_test::block_on(async {
+    /// use holodex::model::Language;
+    ///
+    /// # if std::env::var_os("HOLODEX_API_TOKEN").is_none() {
+    /// #   std::env::set_var("HOLODEX_API_TOKEN", "my-api-token");
+    /// # }
+    /// let token = std::env::var("HOLODEX_API_TOKEN").unwrap();
+    /// let client = holodex::Client::new(&token)?;
+    ///
+    /// let korone_birthday = "2l3i7MulCgs-I".into();
+    /// let metadata = client.video_with_related(&korone_birthday, &[Language::English]).await?;
+    ///
+    /// for related in &metadata.related {
+    ///     println!("{}", related.title);
+    /// }
+    ///
+    /// # Ok(())
+    /// # })
+    /// # }
+    /// ```
+    ///
+    /// # Errors
+    /// Will return [`Error::ApiRequestFailed`] if sending the API request fails.
+    ///
+    /// Will return [`Error::InvalidResponse`] if the API returned a faulty response or server error.
+    pub async fn video_with_related(
+        &self,
+        video_id: &VideoId,
+        related_language_filter: &[Language],
+    ) -> Result<VideoFull, Error> {
+        self.get_video(
+            video_id,
+            Some(&[(
+                "lang",
+                related_language_filter
+                    .iter()
+                    .map(ToString::to_string)
+                    .join(","),
+            )]),
+        )
+        .await
+    }
+
     /// Search for videos matching the given search conditions.
     ///
     /// Searching for `topics` and `clips` together is not supported,
@@ -387,6 +505,34 @@ impl Client {
 
         Ok(videos_with_comments)
     }
+
+    async fn get_video<T>(&self, video_id: &VideoId, query: Option<&T>) -> Result<VideoFull, Error>
+    where
+        T: serde::Serialize + Sync + Send + ?Sized + std::fmt::Debug,
+    {
+        let mut request = self
+            .http
+            .get(format!("{}/videos/{}", Self::ENDPOINT, video_id));
+
+        if let Some(query) = query {
+            request = request.query(query);
+        }
+
+        let res = request.send().await.map_err(|e| Error::ApiRequestFailed {
+            endpoint: "/videos/{video_id}",
+            source: e,
+        })?;
+
+        let video = validate_response(res)
+            .await
+            .map_err(|e| Error::InvalidResponse {
+                endpoint: "/videos/{video_id}",
+                source: e,
+            })?;
+
+        Ok(video)
+    }
+
     #[fix_hidden_lifetime_bug]
     async fn query_videos(
         &self,
