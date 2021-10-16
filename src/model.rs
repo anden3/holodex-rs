@@ -1,21 +1,28 @@
-use std::collections::HashMap;
+//! Structs modelling the data types used by the API.
+
+use std::{fmt::Display, ops::Deref, string::ToString};
 
 use chrono::{DateTime, Utc};
+use itertools::Itertools;
 use serde::{self, Deserialize, Serialize};
 use serde_enum_str::{Deserialize_enum_str, Serialize_enum_str};
 use serde_with::{serde_as, CommaSeparator, DisplayFromStr, StringWithSeparator};
-use strum::Display;
+use strum::Display as EnumDisplay;
 
 use crate::util::is_default;
 
+use self::id::{ChannelId, VideoId};
+
+pub mod id;
+
 #[serde_as]
-#[derive(Serialize, Debug, Clone)]
+#[derive(Serialize, Debug, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
 /// Filtering criteria for the various video endpoints.
-pub struct VideoQueryParameters {
+pub struct VideoFilter {
     /// Only return videos from that channel.
-    pub channel_id: Option<String>,
+    pub channel_id: Option<ChannelId>,
     /// Only return the video with that specific ID.
-    pub id: Option<String>,
+    pub id: Option<VideoId>,
     /// Only return videos from a specific organization.
     pub org: Option<Organisation>,
     #[serde_as(as = "StringWithSeparator::<CommaSeparator, ExtraVideoInfo>")]
@@ -29,7 +36,7 @@ pub struct VideoQueryParameters {
     /// Max amount of hours in the future to return videos from. Videos scheduled further in the future will not be returned.
     pub max_upcoming_hours: u32,
     /// If only videos mentioning a specific channel should be returned.
-    pub mentioned_channel_id: Option<String>,
+    pub mentioned_channel_id: Option<ChannelId>,
 
     #[serde_as(as = "DisplayFromStr")]
     #[serde(skip_serializing_if = "is_default")]
@@ -50,14 +57,22 @@ pub struct VideoQueryParameters {
     #[serde(skip_serializing_if = "Vec::is_empty")]
     /// Which statuses the videos should have.
     pub status: Vec<VideoStatus>,
-    /// The topics that videos should be related to.
+    /// A topic that the videos should be related to.
     pub topic: Option<String>,
     #[serde(rename = "type")]
     /// The type of the videos.
     pub video_type: VideoType,
 }
 
-impl Default for VideoQueryParameters {
+impl VideoFilter {
+    #[must_use]
+    /// Create a new `VideoFilter` with default values.
+    pub fn new() -> Self {
+        Self::default()
+    }
+}
+
+impl Default for VideoFilter {
     fn default() -> Self {
         Self {
             channel_id: None,
@@ -65,7 +80,7 @@ impl Default for VideoQueryParameters {
             include: vec![ExtraVideoInfo::LiveInfo],
             lang: vec![VideoLanguage::All],
             limit: 9999,
-            max_upcoming_hours: 672,
+            max_upcoming_hours: 48,
             mentioned_channel_id: None,
             offset: 0,
             order: VideoOrder::Descending,
@@ -79,8 +94,92 @@ impl Default for VideoQueryParameters {
     }
 }
 
+impl Display for VideoFilter {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{} {{ channel_id: {}, id: {}, org: {}, include: {}, lang: {}, max_upcoming_hours: {}, mentioned_channel_id: {}, paginated: {}, limit: {}, offset: {}, sort_by: {}, order: {}, status: {}, topic: {}, video_type: {} }}",
+            stringify!(VideoFilter),
+            self.channel_id.as_ref().map_or("None", |id| &*id.0),
+            self.id.as_ref().map_or("None", |id| &*id.0),
+            self.org.as_ref().map_or("None".to_owned(), ToString::to_string),
+            self.include.iter().map(ToString::to_string).join(", "),
+            self.lang.iter().map(ToString::to_string).join(", "),
+            self.max_upcoming_hours,
+            self.mentioned_channel_id.as_ref().map_or("None", |id| &*id.0),
+            self.paginated,
+            self.limit,
+            self.offset,
+            self.sort_by,
+            self.order,
+            self.status.iter().map(ToString::to_string).join(", "),
+            self.topic.as_ref().map_or("None".to_owned(), ToString::to_string),
+            self.video_type,
+        )
+    }
+}
+
+#[serde_as]
+#[derive(Serialize, Debug, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
+/// Filtering criteria for videos related to a channel.
+pub struct ChannelVideoFilter {
+    #[serde_as(as = "StringWithSeparator::<CommaSeparator, ExtraVideoInfo>")]
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    /// Extra information to include with each video.
+    pub include: Vec<ExtraVideoInfo>,
+    #[serde_as(as = "StringWithSeparator::<CommaSeparator, VideoLanguage>")]
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    /// If only videos of a specific [`VideoLanguage`] should be returned.
+    pub lang: Vec<VideoLanguage>,
+
+    #[serde_as(as = "DisplayFromStr")]
+    #[serde(skip_serializing_if = "is_default")]
+    /// If the results should be paginated.
+    /// If so, the length of the results will limited to `limit`, with an offset of `offset`.
+    pub paginated: bool,
+    /// If `paginated` is true, only this many videos will be returned.
+    pub limit: u32,
+    /// If `paginated` is true, the results will be offset by this many videos.
+    pub offset: i32,
+}
+
+impl ChannelVideoFilter {
+    #[must_use]
+    /// Create a new `ChannelVideoFilter` with default values.
+    pub fn new() -> Self {
+        Self::default()
+    }
+}
+
+impl Default for ChannelVideoFilter {
+    fn default() -> Self {
+        Self {
+            include: vec![ExtraVideoInfo::LiveInfo],
+            lang: vec![VideoLanguage::All],
+            limit: 100,
+            offset: 0,
+            paginated: true,
+        }
+    }
+}
+
+impl Display for ChannelVideoFilter {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{} {{ include: {}, lang: {}, paginated: {}, limit: {}, offset: {} }}",
+            stringify!(ChannelVideoFilter),
+            self.include.iter().map(ToString::to_string).join(", "),
+            self.lang.iter().map(ToString::to_string).join(", "),
+            self.paginated,
+            self.limit,
+            self.offset
+        )
+    }
+}
+
 #[non_exhaustive]
-#[derive(Serialize, Debug, Display, Copy, Clone)]
+#[derive(Serialize, Debug, EnumDisplay, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[serde(rename_all(serialize = "snake_case"))]
 #[strum(serialize_all = "snake_case")]
 /// What extra info to include in the response.
@@ -106,8 +205,10 @@ pub enum ExtraVideoInfo {
 }
 
 #[non_exhaustive]
-#[derive(Serialize, Debug, Display, Copy, Clone)]
-#[serde(rename_all(serialize = "lowercase"))]
+#[derive(
+    Serialize, Deserialize, Debug, EnumDisplay, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash,
+)]
+#[serde(rename_all(serialize = "lowercase", deserialize = "lowercase"))]
 #[strum(serialize_all = "lowercase")]
 /// What language to filter videos by.
 pub enum VideoLanguage {
@@ -119,7 +220,9 @@ pub enum VideoLanguage {
     JP,
 }
 
-#[derive(Serialize, Debug, Copy, Clone)]
+#[derive(
+    Serialize, Deserialize, EnumDisplay, Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash,
+)]
 /// What order that videos should be in, ascending or descending.
 /// For specifying what order they should be sorted in, see [`SortBy`].
 pub enum VideoOrder {
@@ -133,7 +236,9 @@ pub enum VideoOrder {
 
 #[non_exhaustive]
 #[allow(clippy::use_self)]
-#[derive(Deserialize_enum_str, Serialize_enum_str, Debug, PartialEq, Clone)]
+#[derive(
+    Deserialize_enum_str, Serialize_enum_str, Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash,
+)]
 #[serde(rename_all = "PascalCase")]
 /// Which organization the VTuber(s) are a part of.
 pub enum Organisation {
@@ -153,7 +258,7 @@ pub enum Organisation {
 }
 
 #[non_exhaustive]
-#[derive(Serialize, Debug, Copy, Clone)]
+#[derive(Serialize, Deserialize, Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[serde(rename_all = "snake_case")]
 /// Different criteria for sorting videos.
 pub enum SortBy {
@@ -191,8 +296,36 @@ pub enum SortBy {
     ChannelId,
 }
 
+impl Display for SortBy {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                SortBy::Id => "ID",
+                SortBy::Title => "Title",
+                SortBy::Type => "Type",
+                SortBy::Topics => "Topics",
+                SortBy::PublishedAt => "Published at",
+                SortBy::AvailableAt => "Available at",
+                SortBy::Duration => "Duration",
+                SortBy::Status => "Status",
+                SortBy::StartScheduled => "Start scheduled",
+                SortBy::StartActual => "Start actual",
+                SortBy::EndActual => "End actual",
+                SortBy::LiveViewers => "Live viewers",
+                SortBy::Description => "Description",
+                SortBy::SongCount => "Song count",
+                SortBy::ChannelId => "Channel ID",
+            }
+        )
+    }
+}
+
 #[non_exhaustive]
-#[derive(Serialize, Deserialize, Debug, Copy, Clone, PartialEq)]
+#[derive(
+    Serialize, Deserialize, EnumDisplay, Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash,
+)]
 #[serde(rename_all = "snake_case")]
 /// The type of the video.
 pub enum VideoType {
@@ -203,8 +336,25 @@ pub enum VideoType {
 }
 
 #[non_exhaustive]
+#[derive(
+    Serialize, Deserialize, Debug, EnumDisplay, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash,
+)]
+#[serde(rename_all = "snake_case")]
+/// The type of videos to fetch from a channel.
+pub enum ChannelVideoType {
+    /// Clip videos of a `VTuber` channel.
+    Clips,
+    /// Uploaded videos from this channel.
+    Videos,
+    /// Videos uploaded by other channels that mention this channel.
+    Collabs,
+}
+
+#[non_exhaustive]
 #[allow(dead_code)]
-#[derive(Serialize, Deserialize, Debug, Copy, Clone, Display, PartialEq, Eq)]
+#[derive(
+    Serialize, Deserialize, Debug, Copy, Clone, EnumDisplay, PartialEq, Eq, PartialOrd, Ord, Hash,
+)]
 #[serde(rename_all = "snake_case")]
 #[strum(serialize_all = "lowercase")]
 /// The status of the [`Video`].
@@ -222,28 +372,49 @@ pub enum VideoStatus {
 }
 
 #[serde_as]
-#[derive(Deserialize, Debug, Clone)]
+#[derive(Deserialize, Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[serde(untagged)]
 /// The result of calling an endpoint returning videos.
 pub enum VideoResponse {
-    /// All the videos that fit the [`VideoQueryParameters`] criteria.
+    /// All the videos that fit the [`VideoFilter`] criteria.
     Videos(Vec<Video>),
     /// A paginated result.
     Page {
         #[serde_as(as = "DisplayFromStr")]
-        /// How many videos in total matched the [`VideoQueryParameters`] criteria.
+        /// How many videos in total matched the [`VideoFilter`] criteria.
         total: i32,
         #[serde(default)]
-        /// [`VideoQueryParameters::limit`] videos, offset by [`VideoQueryParameters::offset`].
+        /// [`VideoFilter::limit`] videos, offset by [`VideoFilter::offset`].
         items: Vec<Video>,
     },
 }
 
-#[derive(Deserialize, Debug, Clone)]
+impl VideoResponse {
+    #[must_use]
+    #[inline]
+    /// Get the videos from the response.
+    pub fn videos(&self) -> &[Video] {
+        match self {
+            VideoResponse::Videos(videos) => videos,
+            VideoResponse::Page { items, .. } => items,
+        }
+    }
+}
+
+impl Deref for VideoResponse {
+    type Target = [Video];
+
+    #[inline]
+    fn deref(&self) -> &Self::Target {
+        self.videos()
+    }
+}
+
+#[derive(Deserialize, Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 /// A video, that can be either a stream, premiere, or clip.
 pub struct Video {
     /// The ID of the video.
-    pub id: String,
+    pub id: VideoId,
     /// The title of the video.
     pub title: String,
     #[serde(rename = "type")]
@@ -269,16 +440,13 @@ pub struct Video {
     #[serde(flatten)]
     /// Live stream information regarding the video, if it is a stream.
     ///
-    /// Included when [`VideoQueryParameters::include`] includes [`ExtraVideoInfo::LiveInfo`].
+    /// Included when [`VideoFilter::include`] includes [`ExtraVideoInfo::LiveInfo`].
     pub live_info: VideoLiveInfo,
     #[serde(default)]
     /// The description of the video.
     ///
-    /// Included when [`VideoQueryParameters::include`] includes [`ExtraVideoInfo::Description`].
+    /// Included when [`VideoFilter::include`] includes [`ExtraVideoInfo::Description`].
     pub description: Option<String>,
-    #[serde(default)]
-    /// Map of live translators and the amount of messages they have sent for the video.
-    pub live_tl_count: Option<HashMap<String, u32>>,
     #[serde(rename = "songcount")]
     #[serde(default)]
     /// How many songs have been sung in the video, if any.
@@ -288,11 +456,11 @@ pub struct Video {
     pub channel: VideoChannel,
 }
 
-#[derive(Deserialize, Debug, Clone)]
+#[derive(Deserialize, Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 /// Smaller version of [`Channel`] with less metadata.
 pub struct ChannelMin {
     /// The ID of the channel.
-    pub id: String,
+    pub id: ChannelId,
     /// The name of the channel.
     pub name: String,
     #[serde(default)]
@@ -309,11 +477,11 @@ pub struct ChannelMin {
 }
 
 #[serde_as]
-#[derive(Deserialize, Debug, Clone)]
+#[derive(Deserialize, Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 /// A channel that uploads videos and/or streams.
 pub struct Channel {
     /// The ID of the channel.
-    pub id: String,
+    pub id: ChannelId,
     /// The name of the channel.
     pub name: String,
     /// The description of the channel.
@@ -372,12 +540,12 @@ pub struct Channel {
     pub comments_crawled_at: Option<DateTime<Utc>>,
 }
 
-#[derive(Deserialize, Debug, Clone)]
+#[derive(Deserialize, Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[serde(untagged)]
 /// A channel reference.
 pub enum VideoChannel {
     /// A channel ID.
-    Id(String),
+    Id(ChannelId),
     /// An object containing some channel metadata.
     Data(ChannelMin),
 }
@@ -386,7 +554,7 @@ impl VideoChannel {
     #[inline]
     #[must_use]
     /// Returns the channel ID.
-    pub fn id(&self) -> &str {
+    pub const fn id(&self) -> &ChannelId {
         match self {
             Self::Id(id) => id,
             Self::Data(d) => &d.id,
@@ -396,7 +564,7 @@ impl VideoChannel {
 
 #[non_exhaustive]
 #[allow(dead_code)]
-#[derive(Deserialize, Debug, Copy, Clone)]
+#[derive(Deserialize, Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[serde(rename_all = "lowercase")]
 /// Different types of channels.
 pub enum ChannelType {
@@ -406,7 +574,7 @@ pub enum ChannelType {
     Subber,
 }
 
-#[derive(Deserialize, Debug, Clone)]
+#[derive(Deserialize, Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 /// A struct containing information about both a video and the channel it was uploaded by.
 pub struct VideoWithChannel {
     #[serde(flatten)]
@@ -417,7 +585,7 @@ pub struct VideoWithChannel {
     pub channel: ChannelMin,
 }
 
-#[derive(Deserialize, Debug, Clone)]
+#[derive(Deserialize, Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 /// A struct containing information about a video and any possible extra metadata that was requested.
 pub struct VideoFull {
     #[serde(flatten)]
@@ -445,7 +613,7 @@ pub struct VideoFull {
     pub song_count: Option<u32>,
 }
 
-#[derive(Deserialize, Debug, Clone, Copy)]
+#[derive(Deserialize, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 /// The livestream metadata of a video.
 pub struct VideoLiveInfo {
     #[serde(default)]
@@ -462,13 +630,13 @@ pub struct VideoLiveInfo {
     pub live_viewers: Option<u32>,
 }
 
-#[derive(Deserialize, Debug, Clone)]
+#[derive(Deserialize, Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 /// A comment that was left on a video.
 pub struct Comment {
     /// The ID of the comment.
     pub comment_key: String,
     /// The ID of the video the comment was left on.
-    pub video_id: String,
+    pub video_id: VideoId,
     /// The message contents of the comment.
     pub message: String,
 }
