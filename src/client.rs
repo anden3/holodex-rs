@@ -4,7 +4,9 @@ use reqwest::header;
 use crate::{
     errors::Error,
     model::{
-        id::ChannelId, Channel, ChannelVideoFilter, ChannelVideoType, VideoFilter, VideoResponse,
+        id::{ChannelId, VideoId},
+        Channel, ChannelVideoFilter, ChannelVideoType, CommentSearch, Language, PaginatedResult,
+        Video, VideoFilter, VideoFull, VideoSearch,
     },
     util::validate_response,
 };
@@ -49,7 +51,7 @@ impl Client {
     ///
     /// Pretty much everything you need.
     /// This is the most 'vanilla' variant with almost no preset values,
-    /// and [`channel`](#method.channel) and [`live`](#method.live) both use the same query structure
+    /// and [`videos_from_channel`][`Self::videos_from_channel`] and [`live`][`Self::live`] both use the same query structure
     /// but provision default values differently for some of the query params.
     ///
     /// Not as powerful at searching arbitrary text as the Search API (currently not documented/available).
@@ -58,21 +60,22 @@ impl Client {
     /// Will return [`Error::ApiRequestFailed`] if sending the API request fails.
     ///
     /// Will return [`Error::InvalidResponse`] if the API returned a faulty response or server error.
-    pub async fn videos(&self, parameters: &VideoFilter) -> Result<VideoResponse, Error> {
+    pub async fn videos(&self, parameters: &VideoFilter) -> Result<PaginatedResult<Video>, Error> {
         self.query_videos("/videos", parameters).await
     }
 
     /// Query live and upcoming videos.
     ///
-    /// This is somewhat similar to calling [`videos`](#method.videos).
+    /// This is somewhat similar to calling [`videos`][`Self::videos`].
     ///
-    /// However, this endpoint imposes these default values on the query parameters: You can choose to override them by providing your own values.
+    /// However, this endpoint imposes these default values on the query parameters:
+    /// You can choose to override them by providing your own values.
     ///
     /// | Parameter  | Default |
     /// |------------|---------|
     /// | Status     | [[`Live`][`crate::model::VideoStatus::Live`], [`Upcoming`][`crate::model::VideoStatus::Upcoming`]] |
     /// | Video type | [`Stream`][`crate::model::VideoType::Stream`]            |
-    /// | Sort by    | [`AvailableAt`][`crate::model::SortBy::AvailableAt`]     |
+    /// | Sort by    | [`AvailableAt`][`crate::model::SortingCriteria::AvailableAt`]     |
     /// | Order      | [`Ascending`][`crate::model::VideoOrder::Ascending`]     |
     /// | Max upcoming hours | 48 |
     /// | Limit      | 9999    |
@@ -80,20 +83,24 @@ impl Client {
     ///
     /// # Examples
     ///
+    /// Find live or upcoming streams from Hololive talents:
     /// ```rust
     /// # fn main() -> Result<(), holodex::errors::Error> {
     /// # tokio_test::block_on(async {
     /// use holodex::model::{Organisation, VideoFilter};
     ///
-    /// // Find what Hololive talents are live or upcoming right now.
-    /// let client = holodex::Client::new("my-api-token")?;
+    /// # if std::env::var_os("HOLODEX_API_TOKEN").is_none() {
+    /// #   std::env::set_var("HOLODEX_API_TOKEN", "my-api-token");
+    /// # }
+    /// let token = std::env::var("HOLODEX_API_TOKEN").unwrap();
+    /// let client = holodex::Client::new(&token)?;
     /// let parameters = VideoFilter {
     ///     org: Some(Organisation::Hololive),
     ///     ..Default::default()
     /// };
     /// let currently_live = client.live(&parameters).await?;
     ///
-    /// for video in currently_live.videos() {
+    /// for video in currently_live.items() {
     ///     println!("{}", video.title);
     /// }
     /// # Ok(())
@@ -105,7 +112,7 @@ impl Client {
     /// Will return [`Error::ApiRequestFailed`] if sending the API request fails.
     ///
     /// Will return [`Error::InvalidResponse`] if the API returned a faulty response or server error.
-    pub async fn live(&self, parameters: &VideoFilter) -> Result<VideoResponse, Error> {
+    pub async fn live(&self, parameters: &VideoFilter) -> Result<PaginatedResult<Video>, Error> {
         self.query_videos("/live", parameters).await
     }
 
@@ -113,26 +120,31 @@ impl Client {
     ///
     /// A simplified endpoint for access channel specific data.
     /// If you want more customization, the same result can be obtained by
-    /// calling [`videos`](#method.videos).
+    /// calling [`videos`][`Self::videos`].
     ///
     /// # Examples
     ///
+    /// Find some English clips of Pekora:
     /// ```rust
     /// # fn main() -> Result<(), holodex::errors::Error> {
     /// # tokio_test::block_on(async {
-    /// use holodex::model::{VideoLanguage, ChannelVideoType, ChannelVideoFilter};
+    /// use holodex::model::{Language, ChannelVideoType, ChannelVideoFilter};
     ///
-    /// // Find some English clips of Pekora.
-    /// let client = holodex::Client::new("my-api-token")?;
+    /// # if std::env::var_os("HOLODEX_API_TOKEN").is_none() {
+    /// #   std::env::set_var("HOLODEX_API_TOKEN", "my-api-token");
+    /// # }
+    /// let token = std::env::var("HOLODEX_API_TOKEN").unwrap();
+    /// let client = holodex::Client::new(&token)?;
+    ///
     /// let parameters = ChannelVideoFilter {
-    ///     lang: vec![VideoLanguage::EN],
+    ///     lang: vec![Language::English],
     ///     ..Default::default()
     /// };
     /// let pekora_ch_id = "UC1DCedRgGHBdm81E1llLhOQ".into();
-    /// let english_clips = client.videos_from_channel(pekora_ch_id, ChannelVideoType::Clips, &parameters)
+    /// let english_clips = client.videos_from_channel(&pekora_ch_id, ChannelVideoType::Clips, &parameters)
     ///     .await?;
     ///
-    /// for clip in english_clips.videos() {
+    /// for clip in english_clips.items() {
     ///     println!("{}", clip.title);
     /// }
     /// # Ok(())
@@ -146,10 +158,10 @@ impl Client {
     /// Will return [`Error::InvalidResponse`] if the API returned a faulty response or server error.
     pub async fn videos_from_channel(
         &self,
-        channel_id: ChannelId,
+        channel_id: &ChannelId,
         video_type: ChannelVideoType,
         parameters: &ChannelVideoFilter,
-    ) -> Result<VideoResponse, Error> {
+    ) -> Result<PaginatedResult<Video>, Error> {
         let res = self
             .http
             .get(format!(
@@ -186,13 +198,18 @@ impl Client {
     ///
     /// # Examples
     ///
+    /// Find if Amelia and/or Gura are live:
     /// ```rust
     /// # fn main() -> Result<(), holodex::errors::Error> {
     /// # tokio_test::block_on(async {
-    /// // Find if Amelia and/or Gura are live.
-    /// let client = holodex::Client::new("my-api-token")?;
-    /// let ame_same = vec!["UCoSrY_IQQVpmIRZ9Xf-y93g".into(), "UCyl1z3jo3XHR1riLFKG5UAg".into()];
-    /// let streams = client.live_from_channels(&ame_same).await?;
+    /// # if std::env::var_os("HOLODEX_API_TOKEN").is_none() {
+    /// #   std::env::set_var("HOLODEX_API_TOKEN", "my-api-token");
+    /// # }
+    /// let token = std::env::var("HOLODEX_API_TOKEN").unwrap();
+    /// let client = holodex::Client::new(&token)?;
+    ///
+    /// let channels = vec!["UCoSrY_IQQVpmIRZ9Xf-y93g".into(), "UCyl1z3jo3XHR1riLFKG5UAg".into()];
+    /// let streams = client.live_from_channels(&channels).await?;
     ///
     /// if !streams.is_empty() {
     ///     println!("At least one of the channels is live!");
@@ -209,11 +226,11 @@ impl Client {
     pub async fn live_from_channels(
         &self,
         channel_ids: &[ChannelId],
-    ) -> Result<VideoResponse, Error> {
+    ) -> Result<PaginatedResult<Video>, Error> {
         let res = self
             .http
             .get(format!("{}/users/live", Self::ENDPOINT))
-            .query(&channel_ids.iter().map(|c| &*c.0).join(","))
+            .query(&[("channels", channel_ids.iter().map(|c| &*c.0).join(","))])
             .send()
             .await
             .map_err(|e| Error::ApiRequestFailed {
@@ -237,7 +254,7 @@ impl Client {
     /// Will return [`Error::ApiRequestFailed`] if sending the API request fails.
     ///
     /// Will return [`Error::InvalidResponse`] if the API returned a faulty response or server error.
-    pub async fn channel(&self, channel_id: ChannelId) -> Result<Channel, Error> {
+    pub async fn channel(&self, channel_id: &ChannelId) -> Result<Channel, Error> {
         let res = self
             .http
             .get(format!("{}/channels/{}", Self::ENDPOINT, channel_id))
@@ -538,7 +555,7 @@ impl Client {
         &self,
         endpoint: &'static str,
         parameters: &VideoFilter,
-    ) -> Result<VideoResponse, Error> {
+    ) -> Result<PaginatedResult<Video>, Error> {
         let res = self
             .http
             .get(format!("{}{}", Self::ENDPOINT, endpoint))

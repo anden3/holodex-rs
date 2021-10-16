@@ -66,7 +66,7 @@ pub enum ParseError {
     #[error("Failed to parse response as JSON: {0:?}\nResponse: {1}")]
     /// The response from the API could not be parsed as JSON.
     ResponseJsonParseError(#[source] serde_json::Error, String),
-    #[error("Failed to parse response: {0:?}")]
+    #[error("Failed to parse response: {0:?}\nResponse: {1}")]
     /// The response from the API could not be parsed.
     ResponseParseError(#[source] serde_json::Error, serde_json::Value),
     #[error("Response was neither valid JSON nor valid UTF-8.")]

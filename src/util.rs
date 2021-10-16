@@ -1,4 +1,4 @@
-use serde::de::DeserializeOwned;
+use serde::Deserialize;
 
 use crate::errors::{ParseError, ServerError, ValidationError};
 
@@ -8,7 +8,7 @@ pub fn is_default<T: Default + PartialEq>(t: &T) -> bool {
 
 pub async fn validate_response<T>(response: reqwest::Response) -> Result<T, ValidationError>
 where
-    T: DeserializeOwned + std::fmt::Debug,
+    T: for<'de> Deserialize<'de> + std::fmt::Debug,
 {
     if let Err(error_code) = (&response).error_for_status_ref() {
         let bytes = match response.bytes().await {
@@ -38,7 +38,7 @@ where
 
 pub fn validate_json_bytes<T>(bytes: &[u8]) -> Result<T, ParseError>
 where
-    T: DeserializeOwned + std::fmt::Debug,
+    T: for<'de> Deserialize<'de> + std::fmt::Debug,
 {
     let data: Result<T, _> = serde_json::from_slice(bytes);
 

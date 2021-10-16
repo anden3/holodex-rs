@@ -31,6 +31,7 @@ version = "3.1.0"
 
 [dependencies.reqwest]
 version = "0.11.5"
+features = ["json"]
 
 [dependencies.serde]
 version = "1.0.130"
@@ -41,7 +42,7 @@ version = "1.0.59"
 
 [dependencies.serde_with]
 version = "1.10.0"
-features = ["macros"]
+features = ["macros", "chrono"]
 
 [dependencies.serde-enum-str]
 version = "0.2.4"
