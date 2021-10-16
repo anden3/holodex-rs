@@ -1,4 +1,8 @@
 //! Structs modelling the data types used by the API.
+#![allow(clippy::use_self)]
+
+pub mod builders;
+pub mod id;
 
 use std::{fmt::Display, ops::Deref, string::ToString};
 
@@ -12,8 +16,6 @@ use strum::Display as EnumDisplay;
 use crate::util::is_default;
 
 use self::id::{ChannelId, VideoId};
-
-pub mod id;
 
 #[serde_as]
 #[derive(Serialize, Debug, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
@@ -176,6 +178,144 @@ impl Display for ChannelVideoFilter {
             self.offset
         )
     }
+}
+
+#[serde_as]
+#[derive(Serialize, Debug, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
+/// Filtering criteria for video searches.
+pub struct VideoSearch {
+    #[serde(rename = "sort")]
+    /// In what order the videos should be returned.
+    pub sort_order: SearchOrder,
+
+    #[serde(rename = "lang")]
+    /// Filter away any clips that are not in any of the given languages.
+    ///
+    /// Streams will always be included no matter their language.
+    pub languages: Vec<Language>,
+    #[serde(rename = "target")]
+    /// Only return videos that are any of the given types.
+    pub types: Vec<VideoType>,
+    /// Only return videos that meet the given conditions.
+    pub conditions: Vec<VideoSearchCondition>,
+    /// Only return videos that are related to any of the given topics.
+    pub topics: Vec<String>,
+    #[serde(rename = "vch")]
+    /// Only return videos that involve all of the given channels.
+    ///
+    /// If two or more channel IDs are specified, only collabs with all of them will be returned,
+    /// or if one channel is a clipper, it will only show clips of the other channels made by this clipper.
+    pub channels: Vec<ChannelId>,
+    #[serde(rename = "org")]
+    /// Only return videos from channels in the given organisation,
+    /// or are clips from a channel in the organisation.
+    pub organisations: Vec<Organisation>,
+
+    #[serde_as(as = "DisplayFromStr")]
+    #[serde(skip_serializing_if = "is_default")]
+    /// If the results should be paginated.
+    /// If so, the length of the results will limited to `limit`, with an offset of `offset`.
+    pub paginated: bool,
+    /// If `paginated` is true, only this many videos will be returned.
+    pub limit: u32,
+    /// If `paginated` is true, the results will be offset by this many videos.
+    pub offset: i32,
+}
+
+impl Default for VideoSearch {
+    fn default() -> Self {
+        Self {
+            sort_order: SearchOrder::Newest,
+            languages: Vec::default(),
+            types: Vec::default(),
+            conditions: Vec::default(),
+            topics: Vec::default(),
+            channels: Vec::default(),
+            organisations: Vec::default(),
+            paginated: true,
+            limit: 30,
+            offset: 0,
+        }
+    }
+}
+
+#[derive(Serialize, Debug, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
+#[serde(rename_all(serialize = "snake_case"))]
+/// A condition that a video must meet to be eligible.
+pub enum VideoSearchCondition {
+    /// The video must include this string in its title or description.
+    Text(String),
+}
+
+#[serde_as]
+#[derive(Serialize, Debug, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
+/// Filtering criteria for comment searches.
+pub struct CommentSearch {
+    /// Only return comments that include the given substring.
+    pub search: String,
+    #[serde(rename = "sort")]
+    /// In what order the comments should be returned.
+    pub sort_order: SearchOrder,
+
+    #[serde(rename = "lang")]
+    /// Filter away any comments on clips that are not in any of the given languages.
+    ///
+    /// Comment on streams will always be included no matter their language.
+    pub languages: Vec<Language>,
+    #[serde(rename = "target")]
+    /// Only return comments on videos that are any of the given types.
+    pub types: Vec<VideoType>,
+    /// Only return comments on videos that are related to any of the given topics.
+    pub topics: Vec<String>,
+    #[serde(rename = "vch")]
+    /// Only return comments on videos that involve all of the given channels.
+    ///
+    /// If two or more channel IDs are specified,
+    /// only comments on collabs with all of them will be returned,
+    /// or if one channel is a clipper,
+    /// it will only return comments on clips of the other channels made by this clipper.
+    pub channels: Vec<ChannelId>,
+    #[serde(rename = "org")]
+    /// Only return comments on videos from channels in the given organisation,
+    /// or that are clips from a channel in the organisation.
+    pub organisations: Vec<Organisation>,
+
+    #[serde_as(as = "DisplayFromStr")]
+    #[serde(skip_serializing_if = "is_default")]
+    /// If the results should be paginated.
+    /// If so, the length of the results will limited to `limit`, with an offset of `offset`.
+    pub paginated: bool,
+    /// If `paginated` is true, only this many comments will be returned.
+    pub limit: u32,
+    /// If `paginated` is true, the results will be offset by this many comments.
+    pub offset: i32,
+}
+
+impl Default for CommentSearch {
+    fn default() -> Self {
+        Self {
+            search: String::default(),
+            sort_order: SearchOrder::Newest,
+            languages: Vec::default(),
+            types: Vec::default(),
+            topics: Vec::default(),
+            channels: Vec::default(),
+            organisations: Vec::default(),
+            paginated: true,
+            limit: 30,
+            offset: 0,
+        }
+    }
+}
+
+#[derive(Serialize, Debug, Clone, Copy, Eq, PartialEq, Ord, PartialOrd, Hash)]
+#[serde(rename_all(serialize = "snake_case"))]
+/// The order in which search results should be returned.
+pub enum SearchOrder {
+    /// Return the oldest videos first.
+    Oldest,
+    /// Return the newest videos first.
+    Newest,
 }
 
 #[non_exhaustive]

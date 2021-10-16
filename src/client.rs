@@ -258,6 +258,135 @@ impl Client {
         Ok(channel)
     }
 
+    /// Search for videos matching the given search conditions.
+    ///
+    /// Searching for `topics` and `clips` together is not supported,
+    /// because clips do not contain `topics`.
+    ///
+    /// # Examples
+    ///
+    /// Find the five latest Okayu/Korone collab streams.
+    /// ```rust
+    /// # fn main() -> Result<(), holodex::errors::Error> {
+    /// # tokio_test::block_on(async {
+    /// use holodex::model::{builders::VideoSearchBuilder, SearchOrder, VideoType};
+    ///
+    /// # if std::env::var_os("HOLODEX_API_TOKEN").is_none() {
+    /// #   std::env::set_var("HOLODEX_API_TOKEN", "my-api-token");
+    /// # }
+    /// let token = std::env::var("HOLODEX_API_TOKEN").unwrap();
+    /// let client = holodex::Client::new(&token)?;
+    ///
+    /// let search = VideoSearchBuilder::new()
+    ///     .order(SearchOrder::Newest)
+    ///     .channels(&["UCvaTdHTWBGv3MKj3KVqJVCw".into(), "UChAnqc_AY5_I3Px5dig3X1Q".into()])
+    ///     .types(&[VideoType::Stream])
+    ///     .limit(5)
+    ///     .build();
+    ///
+    /// let results = client.search_videos(&search).await?;
+    ///
+    /// for result in results {
+    ///     println!("{}", result.title);
+    /// }
+    ///
+    /// # Ok(())
+    /// # })
+    /// # }
+    /// ```
+    ///
+    /// # Errors
+    /// Will return [`Error::ApiRequestFailed`] if sending the API request fails.
+    ///
+    /// Will return [`Error::InvalidResponse`] if the API returned a faulty response or server error.
+    pub async fn search_videos(
+        &self,
+        search_parameters: &VideoSearch,
+    ) -> Result<PaginatedResult<Video>, Error> {
+        let res = self
+            .http
+            .post(format!("{}/search/videoSearch", Self::ENDPOINT))
+            .json(search_parameters)
+            .send()
+            .await
+            .map_err(|e| Error::ApiRequestFailed {
+                endpoint: "/search/videoSearch",
+                source: e,
+            })?;
+
+        let videos = validate_response(res)
+            .await
+            .map_err(|e| Error::InvalidResponse {
+                endpoint: "/search/videoSearch",
+                source: e,
+            })?;
+
+        Ok(videos)
+    }
+
+    /// Search for comments matching the given search conditions.
+    ///
+    /// # Examples
+    ///
+    /// Find the 50 oldest comments containing the word `peko` on streams from Nijisanji.
+    /// ```rust
+    /// # fn main() -> Result<(), holodex::errors::Error> {
+    /// # tokio_test::block_on(async {
+    /// use holodex::model::{builders::CommentSearchBuilder, Organisation, SearchOrder, VideoType};
+    ///
+    /// # if std::env::var_os("HOLODEX_API_TOKEN").is_none() {
+    /// #   std::env::set_var("HOLODEX_API_TOKEN", "my-api-token");
+    /// # }
+    /// let token = std::env::var("HOLODEX_API_TOKEN").unwrap();
+    /// let client = holodex::Client::new(&token)?;
+    ///
+    /// let search = CommentSearchBuilder::new("peko")
+    ///     .order(SearchOrder::Oldest)
+    ///     .organisations(&[Organisation::Nijisanji])
+    ///     .types(&[VideoType::Stream])
+    ///     .limit(50)
+    ///     .build();
+    ///
+    /// let videos_with_comments = client.search_comments(&search).await?;
+    ///
+    /// for comment in videos_with_comments.into_iter().flat_map(|v| v.comments) {
+    ///     println!("{}", comment);
+    /// }
+    ///
+    /// # Ok(())
+    /// # })
+    /// # }
+    /// ```
+    ///
+    /// # Errors
+    /// Will return [`Error::ApiRequestFailed`] if sending the API request fails.
+    ///
+    /// Will return [`Error::InvalidResponse`] if the API returned a faulty response or server error.
+    pub async fn search_comments(
+        &self,
+        search_parameters: &CommentSearch,
+    ) -> Result<PaginatedResult<VideoFull>, Error> {
+        let res = self
+            .http
+            .post(format!("{}/search/commentSearch", Self::ENDPOINT))
+            .json(search_parameters)
+            .send()
+            .await
+            .map_err(|e| Error::ApiRequestFailed {
+                endpoint: "/search/commentSearch",
+                source: e,
+            })?;
+
+        let videos_with_comments =
+            validate_response(res)
+                .await
+                .map_err(|e| Error::InvalidResponse {
+                    endpoint: "/search/commentSearch",
+                    source: e,
+                })?;
+
+        Ok(videos_with_comments)
+    }
     #[fix_hidden_lifetime_bug]
     async fn query_videos(
         &self,
