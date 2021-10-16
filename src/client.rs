@@ -25,6 +25,21 @@ impl Client {
     #[must_use = "Unused Holodex client."]
     /// Create a new client with the provided API token.
     ///
+    /// # Examples
+    /// Create a client that gets the API token from an environment variable:
+    /// ```rust
+    /// # fn main() -> Result<(), holodex::errors::Error> {
+    /// # tokio_test::block_on(async {
+    /// # if std::env::var_os("HOLODEX_API_TOKEN").is_none() {
+    /// #   std::env::set_var("HOLODEX_API_TOKEN", "my-api-token");
+    /// # }
+    /// let token = std::env::var("HOLODEX_API_TOKEN").unwrap();
+    /// let client = holodex::Client::new(&token)?;
+    /// # Ok(())
+    /// # })
+    /// # }
+    /// ```
+    ///
     /// # Errors
     /// Will return [`Error::InvalidApiToken`] if `api_token` contains invalid characters.
     ///
@@ -55,6 +70,45 @@ impl Client {
     /// but provision default values differently for some of the query params.
     ///
     /// Not as powerful at searching arbitrary text as the Search API (currently not documented/available).
+    ///
+    /// # Examples
+    ///
+    /// Retrieve the five closest Japanese streams from independent streamers
+    /// scheduled to go live within the next 24 hours, along with their descriptions.
+    /// ```rust
+    /// # fn main() -> Result<(), holodex::errors::Error> {
+    /// # tokio_test::block_on(async {
+    /// use holodex::model::{
+    ///     builders::VideoFilterBuilder, ExtraVideoInfo, Language, Organisation,
+    ///     SortingCriteria, VideoType
+    /// };
+    ///
+    /// # if std::env::var_os("HOLODEX_API_TOKEN").is_none() {
+    /// #   std::env::set_var("HOLODEX_API_TOKEN", "my-api-token");
+    /// # }
+    /// let token = std::env::var("HOLODEX_API_TOKEN").unwrap();
+    /// let client = holodex::Client::new(&token)?;
+    ///
+    /// let filter = VideoFilterBuilder::new()
+    ///     .organisation(Organisation::Independents)
+    ///     .language(&[Language::Japanese])
+    ///     .video_type(VideoType::Stream)
+    ///     .max_upcoming_hours(24)
+    ///     .include(&[ExtraVideoInfo::Description])
+    ///     .sort_by(SortingCriteria::StartScheduled)
+    ///     .limit(5)
+    ///     .build();
+    ///
+    /// let results = client.videos(&filter).await?;
+    ///
+    /// for stream in results {
+    ///     println!("{}", stream.title);
+    /// }
+    ///
+    /// # Ok(())
+    /// # })
+    /// # }
+    /// ```
     ///
     /// # Errors
     /// Will return [`Error::ApiRequestFailed`] if sending the API request fails.
@@ -249,6 +303,29 @@ impl Client {
     }
 
     /// Get channel information.
+    ///
+    /// # Examples
+    ///
+    /// Find out how many subscribers Astel has.
+    /// ```rust
+    /// # fn main() -> Result<(), holodex::errors::Error> {
+    /// # tokio_test::block_on(async {
+    /// # if std::env::var_os("HOLODEX_API_TOKEN").is_none() {
+    /// #   std::env::set_var("HOLODEX_API_TOKEN", "my-api-token");
+    /// # }
+    /// let token = std::env::var("HOLODEX_API_TOKEN").unwrap();
+    /// let client = holodex::Client::new(&token)?;
+    ///
+    /// let channel_id = "UCNVEsYbiZjH5QLmGeSgTSzg".into();
+    /// let channel = client.channel(&channel_id).await?;
+    ///
+    /// if let Some(subs) = &channel.stats.subscriber_count {
+    ///     println!("Astel has {} subscribers", subs);
+    /// }
+    /// # Ok(())
+    /// # })
+    /// # }
+    /// ```
     ///
     /// # Errors
     /// Will return [`Error::ApiRequestFailed`] if sending the API request fails.
