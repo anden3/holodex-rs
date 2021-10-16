@@ -56,9 +56,13 @@
 
 //! Rust wrapper for the Holodex v2 API.
 
-mod client;
+#[macro_use]
+extern crate fix_hidden_lifetime_bug;
+
 pub mod errors;
 pub mod model;
+
+mod client;
 mod util;
 
 pub use client::Client;
