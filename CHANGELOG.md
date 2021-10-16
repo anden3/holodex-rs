@@ -30,8 +30,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <csr-read-only-do-not-edit/>
 
- - 10 commits contributed to the release over the course of 2 calendar days.
- - 10 commits where understood as [conventional](https://www.conventionalcommits.org).
+ - 11 commits contributed to the release over the course of 2 calendar days.
+ - 11 commits where understood as [conventional](https://www.conventionalcommits.org).
  - 0 issues like '(#ID)' where seen in commit messages
 
 ### Commit Details
@@ -41,6 +41,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 <details><summary>view details</summary>
 
  * **Uncategorized**
+    - add changelog ([`1567062`](https://github.com/git///anden3/holodex-rs.git/commit/1567062b323bba2ea115a2fe1c44b7d7a2653c5d))
     - add more examples ([`0593d1d`](https://github.com/git///anden3/holodex-rs.git/commit/0593d1dbdd56dbee90f7a08d535fb313d2c8e051))
     - rename and rearrange types ([`7754dad`](https://github.com/git///anden3/holodex-rs.git/commit/7754dadc2af0b1f1b21eae3eb4904fb683371a8f))
     - add video metadata methods ([`78d80a3`](https://github.com/git///anden3/holodex-rs.git/commit/78d80a320fb3de7eda4e6df56e0b67d841fc3088))
