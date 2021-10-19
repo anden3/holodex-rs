@@ -50,8 +50,8 @@
 )]
 #![allow(
     clippy::non_ascii_literal,
-    // clippy::cargo_common_metadata,
-    // clippy::multiple_crate_versions
+    clippy::cargo_common_metadata,
+    clippy::multiple_crate_versions
 )]
 
 //! Rust wrapper for the Holodex v2 API.
