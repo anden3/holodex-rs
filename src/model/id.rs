@@ -183,6 +183,175 @@ impl FromStr for VideoId {
 /// The ID of a channel.
 pub struct ChannelId(pub(crate) String);
 
+impl ChannelId {
+    /// Get all the metadata associated with this channel.
+    ///
+    /// # Examples
+    ///
+    /// Show the top topics associated with Aruran's channel.
+    /// ```rust
+    /// # fn main() -> Result<(), holodex::errors::Error> {
+    /// # tokio_test::block_on(async {
+    /// use holodex::model::id::ChannelId;
+    ///
+    /// # if std::env::var_os("HOLODEX_API_TOKEN").is_none() {
+    /// #   std::env::set_var("HOLODEX_API_TOKEN", "my-api-token");
+    /// # }
+    /// let token = std::env::var("HOLODEX_API_TOKEN").unwrap();
+    /// let client = holodex::Client::new(&token)?;
+    ///
+    /// let channel_id: ChannelId = "UCKeAhJvy8zgXWbh9duVjIaQ".parse()?;
+    /// let channel = channel_id.metadata(&client).await?;
+    ///
+    /// for topic in channel.top_topics {
+    ///     println!("{}", topic);
+    /// }
+    /// # Ok(())
+    /// # })
+    /// # }
+    /// ```
+    ///
+    /// # Errors
+    /// Will return [`Error::ApiRequestFailed`] if sending the API request fails.
+    ///
+    /// Will return [`Error::InvalidResponse`] if the API returned a faulty response or server error.
+    pub async fn metadata(&self, client: &Client) -> Result<Channel, Error> {
+        client.channel(self).await
+    }
+
+    /// Get videos that this channel has uploaded.
+    ///
+    /// # Examples
+    ///
+    /// Print some videos uploaded by Kiara.
+    /// ```rust
+    /// # fn main() -> Result<(), holodex::errors::Error> {
+    /// # tokio_test::block_on(async {
+    /// use holodex::model::id::ChannelId;
+    ///
+    /// # if std::env::var_os("HOLODEX_API_TOKEN").is_none() {
+    /// #   std::env::set_var("HOLODEX_API_TOKEN", "my-api-token");
+    /// # }
+    /// let token = std::env::var("HOLODEX_API_TOKEN").unwrap();
+    /// let client = holodex::Client::new(&token)?;
+    ///
+    /// let channel_id: ChannelId = "UCHsx4Hqa-1ORjQTh9TYDhww".parse()?;
+    /// let videos = channel_id.videos(&client).await?;
+    ///
+    /// for video in videos {
+    ///     println!("{}", video.title);
+    /// }
+    /// # Ok(())
+    /// # })
+    /// # }
+    /// ```
+    ///
+    /// # Errors
+    /// Will return [`Error::ApiRequestFailed`] if sending the API request fails.
+    ///
+    /// Will return [`Error::InvalidResponse`] if the API returned a faulty response or server error.
+    pub async fn videos(&self, client: &Client) -> Result<PaginatedResult<Video>, Error> {
+        client
+            .videos_from_channel(
+                self,
+                ChannelVideoType::Videos,
+                &ChannelVideoFilter {
+                    paginated: false,
+                    ..ChannelVideoFilter::default()
+                },
+            )
+            .await
+    }
+
+    /// Get clips related to this channel.
+    ///
+    /// # Examples
+    ///
+    /// Show some clips related to Uto.
+    /// ```rust
+    /// # fn main() -> Result<(), holodex::errors::Error> {
+    /// # tokio_test::block_on(async {
+    /// use holodex::model::id::ChannelId;
+    ///
+    /// # if std::env::var_os("HOLODEX_API_TOKEN").is_none() {
+    /// #   std::env::set_var("HOLODEX_API_TOKEN", "my-api-token");
+    /// # }
+    /// let token = std::env::var("HOLODEX_API_TOKEN").unwrap();
+    /// let client = holodex::Client::new(&token)?;
+    ///
+    /// let channel_id: ChannelId = "UCdYR5Oyz8Q4g0ZmB4PkTD7g".parse()?;
+    /// let clips = channel_id.clips(&client).await?;
+    ///
+    /// for clip in clips {
+    ///     println!("{}", clip.title);
+    /// }
+    /// # Ok(())
+    /// # })
+    /// # }
+    /// ```
+    ///
+    /// # Errors
+    /// Will return [`Error::ApiRequestFailed`] if sending the API request fails.
+    ///
+    /// Will return [`Error::InvalidResponse`] if the API returned a faulty response or server error.
+    pub async fn clips(&self, client: &Client) -> Result<PaginatedResult<Video>, Error> {
+        client
+            .videos_from_channel(
+                self,
+                ChannelVideoType::Clips,
+                &ChannelVideoFilter {
+                    paginated: false,
+                    ..ChannelVideoFilter::default()
+                },
+            )
+            .await
+    }
+
+    /// Get collabs from other videos that mention this channel.
+    ///
+    /// # Examples
+    ///
+    /// Show some collabs with Korone.
+    /// ```rust
+    /// # fn main() -> Result<(), holodex::errors::Error> {
+    /// # tokio_test::block_on(async {
+    /// use holodex::model::id::ChannelId;
+    ///
+    /// # if std::env::var_os("HOLODEX_API_TOKEN").is_none() {
+    /// #   std::env::set_var("HOLODEX_API_TOKEN", "my-api-token");
+    /// # }
+    /// let token = std::env::var("HOLODEX_API_TOKEN").unwrap();
+    /// let client = holodex::Client::new(&token)?;
+    ///
+    /// let channel_id: ChannelId = "UChAnqc_AY5_I3Px5dig3X1Q".parse()?;
+    /// let collabs = channel_id.collabs(&client).await?;
+    ///
+    /// for collab in collabs {
+    ///     println!("{}", collab.title);
+    /// }
+    /// # Ok(())
+    /// # })
+    /// # }
+    /// ```
+    ///
+    /// # Errors
+    /// Will return [`Error::ApiRequestFailed`] if sending the API request fails.
+    ///
+    /// Will return [`Error::InvalidResponse`] if the API returned a faulty response or server error.
+    pub async fn collabs(&self, client: &Client) -> Result<PaginatedResult<Video>, Error> {
+        client
+            .videos_from_channel(
+                self,
+                ChannelVideoType::Clips,
+                &ChannelVideoFilter {
+                    paginated: false,
+                    ..ChannelVideoFilter::default()
+                },
+            )
+            .await
+    }
+
+
 impl Display for ChannelId {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.0)
