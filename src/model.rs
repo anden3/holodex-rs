@@ -724,9 +724,10 @@ pub struct Video {
     /// [`live_info.start_scheduled`][VideoLiveInfo::start_scheduled`], or
     /// [`published_at`](#structfield.published_at).
     pub available_at: DateTime<Utc>,
-    #[serde_as(as = "DurationSeconds<i64>")]
+    #[serde_as(as = "Option<DurationSeconds<i64>>")]
+    #[serde(default)]
     /// The length of the video in seconds.
-    pub duration: Duration,
+    pub duration: Option<Duration>,
     /// The status of the video.
     pub status: VideoStatus,
     #[serde(flatten)]
