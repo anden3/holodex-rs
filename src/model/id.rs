@@ -6,11 +6,135 @@ use std::{fmt::Display, ops::Deref, str::FromStr};
 use regex::Regex;
 use serde::{self, Deserialize, Serialize};
 
-use crate::errors::Error;
+use crate::{
+    errors::Error,
+    model::{
+        Channel, ChannelVideoFilter, ChannelVideoType, Language, PaginatedResult, Video, VideoFull,
+    },
+    Client,
+};
 
 #[derive(Debug, Clone, PartialEq, Eq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
 /// The ID of a video.
 pub struct VideoId(pub(crate) String);
+
+impl VideoId {
+    /// Get all the metadata associated with this channel.
+    ///
+    /// # Examples
+    ///
+    /// Get all songs sung in the Lazu Light karaoke (2021-10-05).
+    /// ```rust
+    /// # fn main() -> Result<(), holodex::errors::Error> {
+    /// # tokio_test::block_on(async {
+    /// use holodex::model::{id::VideoId, Language};
+    ///
+    /// # if std::env::var_os("HOLODEX_API_TOKEN").is_none() {
+    /// #   std::env::set_var("HOLODEX_API_TOKEN", "my-api-token");
+    /// # }
+    /// let token = std::env::var("HOLODEX_API_TOKEN").unwrap();
+    /// let client = holodex::Client::new(&token)?;
+    ///
+    /// let video_id: VideoId = "https://www.youtube.com/watch?v=V2SBDtZ4khY".parse()?;
+    /// let video = video_id.metadata(&client).await?;
+    ///
+    /// for song in video.songs {
+    ///     println!("{}", song);
+    /// }
+    /// # Ok(())
+    /// # })
+    /// # }
+    /// ```
+    ///
+    /// # Errors
+    /// Will return [`Error::ApiRequestFailed`] if sending the API request fails.
+    ///
+    /// Will return [`Error::InvalidResponse`] if the API returned a faulty response or server error.
+    pub async fn metadata(&self, client: &Client) -> Result<VideoFull, Error> {
+        client.video(self).await
+    }
+
+    /// Get all indexed comments containing timestamps for this video.
+    ///
+    /// # Examples
+    ///
+    /// Print all timestamped comments from Elira's birthday stream (2021).
+    /// ```rust
+    /// # fn main() -> Result<(), holodex::errors::Error> {
+    /// # tokio_test::block_on(async {
+    /// use holodex::model::id::VideoId;
+    ///
+    /// # if std::env::var_os("HOLODEX_API_TOKEN").is_none() {
+    /// #   std::env::set_var("HOLODEX_API_TOKEN", "my-api-token");
+    /// # }
+    /// let token = std::env::var("HOLODEX_API_TOKEN").unwrap();
+    /// let client = holodex::Client::new(&token)?;
+    ///
+    /// let video: VideoId = "https://www.youtube.com/watch?v=tDXvkK_MLl0".parse()?;
+    /// let timestamps = video.timestamps(&client).await?;
+    ///
+    /// for timestamp in timestamps {
+    ///     println!("{}", timestamp);
+    /// }
+    /// # Ok(())
+    /// # })
+    /// # }
+    /// ```
+    ///
+    /// # Errors
+    /// Will return [`Error::ApiRequestFailed`] if sending the API request fails.
+    ///
+    /// Will return [`Error::InvalidResponse`] if the API returned a faulty response or server error.
+    pub async fn timestamps(
+        &self,
+        client: &Client,
+    ) -> Result<impl Iterator<Item = String> + '_, Error> {
+        let metadata = client.video_with_timestamps(self).await?;
+
+        Ok(metadata.comments.into_iter().map(|c| c.message))
+    }
+
+    /// Get all videos related to this video that are in the given languages.
+    ///
+    /// # Examples
+    ///
+    /// Get Japanese clips related to Calli's birthday stream (2021).
+    /// ```rust
+    /// # fn main() -> Result<(), holodex::errors::Error> {
+    /// # tokio_test::block_on(async {
+    /// use holodex::model::{id::VideoId, Language};
+    ///
+    /// # if std::env::var_os("HOLODEX_API_TOKEN").is_none() {
+    /// #   std::env::set_var("HOLODEX_API_TOKEN", "my-api-token");
+    /// # }
+    /// let token = std::env::var("HOLODEX_API_TOKEN").unwrap();
+    /// let client = holodex::Client::new(&token)?;
+    ///
+    /// let video: VideoId = "https://www.youtube.com/watch?v=NiziRRHFZGA".parse()?;
+    /// let clips = video.related(&client, &[Language::Japanese]).await?;
+    ///
+    /// for clip in clips {
+    ///     println!("{}", clip.title);
+    /// }
+    /// # Ok(())
+    /// # })
+    /// # }
+    /// ```
+    ///
+    /// # Errors
+    /// Will return [`Error::ApiRequestFailed`] if sending the API request fails.
+    ///
+    /// Will return [`Error::InvalidResponse`] if the API returned a faulty response or server error.
+    pub async fn related(
+        &self,
+        client: &Client,
+        languages: &[Language],
+    ) -> Result<impl Iterator<Item = Video> + '_, Error> {
+        let metadata = client.video_with_related(self, languages).await?;
+
+        Ok(metadata.related.into_iter())
+    }
+}
 
 impl Display for VideoId {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
