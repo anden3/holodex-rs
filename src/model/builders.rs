@@ -86,9 +86,9 @@ impl VideoFilterBuilder {
     #[inline]
     #[must_use]
     #[allow(clippy::missing_const_for_fn)]
-    /// Only return a video with the given ID.
-    pub fn id(mut self, id: VideoId) -> Self {
-        self.filter.id = Some(id);
+    /// Only return videos with any of the given IDs.
+    pub fn id(mut self, ids: &[VideoId]) -> Self {
+        self.filter.id = ids.to_vec();
         self
     }
 

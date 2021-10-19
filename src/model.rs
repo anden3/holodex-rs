@@ -23,8 +23,10 @@ use self::id::{ChannelId, VideoId};
 pub struct VideoFilter {
     /// Only return videos from that channel.
     pub channel_id: Option<ChannelId>,
-    /// Only return the video with that specific ID.
-    pub id: Option<VideoId>,
+    #[serde_as(as = "StringWithSeparator::<CommaSeparator, VideoId>")]
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    /// Only return videos with any of these IDs.
+    pub id: Vec<VideoId>,
     /// Only return videos from a specific organization.
     pub org: Option<Organisation>,
     #[serde_as(as = "StringWithSeparator::<CommaSeparator, ExtraVideoInfo>")]
@@ -78,7 +80,7 @@ impl Default for VideoFilter {
     fn default() -> Self {
         Self {
             channel_id: None,
-            id: None,
+            id: Vec::new(),
             include: vec![ExtraVideoInfo::LiveInfo],
             lang: vec![Language::All],
             limit: 9999,
@@ -103,7 +105,7 @@ impl Display for VideoFilter {
             "{} {{ channel_id: {}, id: {}, org: {}, include: {}, lang: {}, max_upcoming_hours: {}, mentioned_channel_id: {}, paginated: {}, limit: {}, offset: {}, sort_by: {}, order: {}, status: {}, topic: {}, video_type: {} }}",
             stringify!(VideoFilter),
             self.channel_id.as_ref().map_or("None", |id| &*id.0),
-            self.id.as_ref().map_or("None", |id| &*id.0),
+            self.id.iter().map(ToString::to_string).join(", "),
             self.org.as_ref().map_or("None".to_owned(), ToString::to_string),
             self.include.iter().map(ToString::to_string).join(", "),
             self.lang.iter().map(ToString::to_string).join(", "),
