@@ -63,9 +63,9 @@ pub struct VideoFilter {
 
     #[serde(rename = "sort")]
     /// By what criteria the videos should be sorted.
-    pub sort_by: SortingCriteria,
+    pub sort_by: VideoSortingCriteria,
     /// In what order the videos should be sorted, ascending or descending.
-    pub order: VideoOrder,
+    pub order: Order,
 }
 
 impl VideoFilter {
@@ -87,10 +87,10 @@ impl Default for VideoFilter {
             max_upcoming_hours: 48,
             mentioned_channel_id: None,
             offset: 0,
-            order: VideoOrder::Descending,
+            order: Order::Descending,
             org: Some(Organisation::Hololive),
             paginated: true,
-            sort_by: SortingCriteria::AvailableAt,
+            sort_by: VideoSortingCriteria::AvailableAt,
             status: Vec::new(),
             topic: None,
             video_type: VideoType::Stream,
@@ -132,9 +132,10 @@ pub struct ChannelVideoFilter {
     /// Extra information to include with each video.
     pub include: Vec<ExtraVideoInfo>,
     #[serde_as(as = "StringWithSeparator::<CommaSeparator, Language>")]
+    #[serde(rename = "lang")]
     #[serde(skip_serializing_if = "Vec::is_empty")]
     /// If only videos of a specific [`Language`] should be returned.
-    pub lang: Vec<Language>,
+    pub languages: Vec<Language>,
 
     #[serde_as(as = "DisplayFromStr")]
     #[serde(skip_serializing_if = "is_default")]
@@ -159,7 +160,7 @@ impl Default for ChannelVideoFilter {
     fn default() -> Self {
         Self {
             include: vec![ExtraVideoInfo::LiveInfo],
-            lang: vec![Language::All],
+            languages: vec![Language::All],
             limit: 100,
             offset: 0,
             paginated: true,
@@ -174,7 +175,7 @@ impl Display for ChannelVideoFilter {
             "{} {{ include: {}, lang: {}, paginated: {}, limit: {}, offset: {} }}",
             stringify!(ChannelVideoFilter),
             self.include.iter().map(ToString::to_string).join(", "),
-            self.lang.iter().map(ToString::to_string).join(", "),
+            self.languages.iter().map(ToString::to_string).join(", "),
             self.paginated,
             self.limit,
             self.offset
@@ -191,24 +192,31 @@ pub struct VideoSearch {
     pub sort_order: SearchOrder,
 
     #[serde(rename = "lang")]
+    #[serde(skip_serializing_if = "Vec::is_empty")]
     /// Filter away any clips that are not in any of the given languages.
     ///
     /// Streams will always be included no matter their language.
     pub languages: Vec<Language>,
     #[serde(rename = "target")]
+    #[serde(skip_serializing_if = "Vec::is_empty")]
     /// Only return videos that are any of the given types.
     pub types: Vec<VideoType>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
     /// Only return videos that meet the given conditions.
     pub conditions: Vec<VideoSearchCondition>,
+    #[serde(rename = "topic")]
+    #[serde(skip_serializing_if = "Vec::is_empty")]
     /// Only return videos that are related to any of the given topics.
     pub topics: Vec<String>,
     #[serde(rename = "vch")]
+    #[serde(skip_serializing_if = "Vec::is_empty")]
     /// Only return videos that involve all of the given channels.
     ///
     /// If two or more channel IDs are specified, only collabs with all of them will be returned,
     /// or if one channel is a clipper, it will only show clips of the other channels made by this clipper.
     pub channels: Vec<ChannelId>,
     #[serde(rename = "org")]
+    #[serde(skip_serializing_if = "Vec::is_empty")]
     /// Only return videos from channels in the given organisation,
     /// or are clips from a channel in the organisation.
     pub organisations: Vec<Organisation>,
@@ -260,16 +268,21 @@ pub struct CommentSearch {
     pub sort_order: SearchOrder,
 
     #[serde(rename = "lang")]
+    #[serde(skip_serializing_if = "Vec::is_empty")]
     /// Filter away any comments on clips that are not in any of the given languages.
     ///
     /// Comment on streams will always be included no matter their language.
     pub languages: Vec<Language>,
     #[serde(rename = "target")]
+    #[serde(skip_serializing_if = "Vec::is_empty")]
     /// Only return comments on videos that are any of the given types.
     pub types: Vec<VideoType>,
+    #[serde(rename = "topic")]
+    #[serde(skip_serializing_if = "Vec::is_empty")]
     /// Only return comments on videos that are related to any of the given topics.
     pub topics: Vec<String>,
     #[serde(rename = "vch")]
+    #[serde(skip_serializing_if = "Vec::is_empty")]
     /// Only return comments on videos that involve all of the given channels.
     ///
     /// If two or more channel IDs are specified,
@@ -278,6 +291,7 @@ pub struct CommentSearch {
     /// it will only return comments on clips of the other channels made by this clipper.
     pub channels: Vec<ChannelId>,
     #[serde(rename = "org")]
+    #[serde(skip_serializing_if = "Vec::is_empty")]
     /// Only return comments on videos from channels in the given organisation,
     /// or that are clips from a channel in the organisation.
     pub organisations: Vec<Organisation>,
@@ -385,9 +399,8 @@ pub enum Language {
 #[derive(
     Serialize, Deserialize, EnumDisplay, Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash,
 )]
-/// What order that videos should be in, ascending or descending.
-/// For specifying what order they should be sorted in, see [`SortingCriteria`].
-pub enum VideoOrder {
+/// What order items should be returned in, ascending or descending.
+pub enum Order {
     #[serde(rename = "asc")]
     /// Sort videos in ascending order.
     Ascending,
@@ -421,7 +434,7 @@ pub enum Organisation {
 )]
 #[serde(rename_all = "snake_case")]
 /// Different criteria for sorting videos.
-pub enum SortingCriteria {
+pub enum VideoSortingCriteria {
     /// Sort by [`Video::id`].
     Id,
     /// Sort alphabetically by [`Video::title`].
@@ -521,6 +534,7 @@ pub enum PaginatedTotal {
 
 #[allow(clippy::from_over_into)]
 impl Into<u32> for PaginatedTotal {
+    #[inline]
     fn into(self) -> u32 {
         match self {
             PaginatedTotal::U32(n) | PaginatedTotal::String(n) => n,
@@ -668,15 +682,16 @@ pub struct Channel {
     pub id: ChannelId,
     /// The name of the channel.
     pub name: String,
-    /// The description of the channel.
-    pub description: String,
+    #[serde(default)]
     /// If the channel has been marked as inactive.
     pub inactive: bool,
-
     #[serde(rename = "type")]
     /// The type of the channel.
     pub channel_type: ChannelType,
 
+    #[serde(default)]
+    /// The description of the channel.
+    pub description: Option<String>,
     #[serde(default)]
     /// The primary language of the channel, if any.
     pub lang: Option<Language>,
@@ -708,7 +723,7 @@ pub struct Channel {
     pub top_topics: Vec<String>,
 
     /// The date the channel was created.
-    pub published_at: DateTime<Utc>,
+    pub published_at: Option<DateTime<Utc>>,
     /// The date this channel metadata was last indexed.
     pub crawled_at: Option<DateTime<Utc>>,
     /// The date the comments posted on videos uploaded by this channel were last indexed.
@@ -760,7 +775,7 @@ impl VideoChannel {
 
 #[non_exhaustive]
 #[allow(dead_code)]
-#[derive(Deserialize, Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Deserialize, Serialize, Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[serde(rename_all = "lowercase")]
 /// Different types of channels.
 pub enum ChannelType {
@@ -806,6 +821,7 @@ pub struct VideoFull {
     pub comments: Vec<Comment>,
 
     #[serde(default)]
+    #[serde(alias = "recommendations")]
     /// Related videos.
     pub related: Vec<Video>,
 }

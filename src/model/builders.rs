@@ -6,8 +6,8 @@ use serde::{self, Serialize};
 
 use super::{
     id::{ChannelId, VideoId},
-    CommentSearch, ExtraVideoInfo, Language, Organisation, SearchOrder, SortingCriteria,
-    VideoFilter, VideoOrder, VideoSearch, VideoSearchCondition, VideoStatus, VideoType,
+    Order, Organisation, SearchOrder, VideoFilter, VideoSearch, VideoSearchCondition,
+    VideoSortingCriteria, VideoStatus, VideoType,
 };
 
 #[derive(Serialize, Debug, Default, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
@@ -61,7 +61,7 @@ impl VideoFilterBuilder {
     #[inline]
     #[must_use]
     /// Sort videos by the given criteria.
-    pub const fn sort_by(mut self, sort_by: SortingCriteria) -> Self {
+    pub const fn sort_by(mut self, sort_by: VideoSortingCriteria) -> Self {
         self.filter.sort_by = sort_by;
         self
     }
@@ -69,7 +69,7 @@ impl VideoFilterBuilder {
     #[inline]
     #[must_use]
     /// Sort videos in the given order.
-    pub const fn order(mut self, order: VideoOrder) -> Self {
+    pub const fn order(mut self, order: Order) -> Self {
         self.filter.order = order;
         self
     }

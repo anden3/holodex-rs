@@ -80,7 +80,7 @@ impl Client {
     /// # tokio_test::block_on(async {
     /// use holodex::model::{
     ///     builders::VideoFilterBuilder, ExtraVideoInfo, Language, Organisation,
-    ///     SortingCriteria, VideoType
+    ///     VideoSortingCriteria, VideoType
     /// };
     ///
     /// # if std::env::var_os("HOLODEX_API_TOKEN").is_none() {
@@ -95,7 +95,7 @@ impl Client {
     ///     .video_type(VideoType::Stream)
     ///     .max_upcoming_hours(24)
     ///     .include(&[ExtraVideoInfo::Description])
-    ///     .sort_by(SortingCriteria::StartScheduled)
+    ///     .sort_by(VideoSortingCriteria::StartScheduled)
     ///     .limit(5)
     ///     .build();
     ///
@@ -129,8 +129,8 @@ impl Client {
     /// |------------|---------|
     /// | Status     | [[`Live`][`crate::model::VideoStatus::Live`], [`Upcoming`][`crate::model::VideoStatus::Upcoming`]] |
     /// | Video type | [`Stream`][`crate::model::VideoType::Stream`]            |
-    /// | Sort by    | [`AvailableAt`][`crate::model::SortingCriteria::AvailableAt`]     |
-    /// | Order      | [`Ascending`][`crate::model::VideoOrder::Ascending`]     |
+    /// | Sort by    | [`AvailableAt`][`crate::model::VideoSortingCriteria::AvailableAt`]     |
+    /// | Order      | [`Ascending`][`crate::model::Order::Ascending`]     |
     /// | Max upcoming hours | 48 |
     /// | Limit      | 9999    |
     /// | Include    | [[`LiveInfo`][`crate::model::ExtraVideoInfo::LiveInfo`]] |
@@ -191,7 +191,7 @@ impl Client {
     /// let client = holodex::Client::new(&token)?;
     ///
     /// let parameters = ChannelVideoFilter {
-    ///     lang: vec![Language::English],
+    ///     languages: vec![Language::English],
     ///     ..Default::default()
     /// };
     /// let pekora_ch_id = "UC1DCedRgGHBdm81E1llLhOQ".into();
