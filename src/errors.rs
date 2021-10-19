@@ -30,6 +30,13 @@ pub enum Error {
         /// The error that was encountered.
         source: ValidationError,
     },
+    #[error("The provided video ID was not valid: {0}")]
+    /// An invalid video ID was passed to the API.
+    InvalidVideoId(String),
+
+    #[error("The provided channel ID was not valid: {0}")]
+    /// An invalid channel ID was passed to the API.
+    InvalidChannelId(String),
 }
 
 #[derive(Error, Diagnostic, Debug)]
