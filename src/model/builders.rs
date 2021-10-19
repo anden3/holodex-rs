@@ -148,8 +148,8 @@ impl VideoFilterBuilder {
     #[inline]
     #[must_use]
     /// Only return videos with any of the given statuses.
-    pub fn status(mut self, status: Vec<VideoStatus>) -> Self {
-        self.filter.status = status;
+    pub fn status(mut self, status: &[VideoStatus]) -> Self {
+        self.filter.status = status.to_vec();
         self
     }
 
