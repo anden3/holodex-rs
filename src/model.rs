@@ -485,7 +485,7 @@ pub enum VideoSortingCriteria {
     /// Sort by the [`VideoType`] of the video.
     Type,
     #[serde(rename = "topic_id")]
-    /// Sort by [`Video::topics`].
+    /// Sort by [`Video::topic`].
     Topics,
     /// Sort by when the video was first published.
     PublishedAt,
@@ -713,9 +713,9 @@ pub struct Video {
     pub video_type: VideoType,
     #[serde(default)]
     #[serde(rename = "topic_id")]
-    /// The topic(s) the video is about.
-    /// Videos of type `clip` cannot not have topic.
-    pub topics: Option<String>,
+    /// The main topic the video is about.
+    /// Videos of type `clip` cannot have a topic.
+    pub topic: Option<String>,
     #[serde(default)]
     /// The date the video was first published.
     pub published_at: Option<DateTime<Utc>>,
