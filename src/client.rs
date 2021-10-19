@@ -115,7 +115,9 @@ impl Client {
     ///
     /// Will return [`Error::InvalidResponse`] if the API returned a faulty response or server error.
     pub async fn videos(&self, parameters: &VideoFilter) -> Result<PaginatedResult<Video>, Error> {
-        self.query_videos("/videos", parameters).await
+        Self::query_videos(&self.http, "/videos", parameters).await
+    }
+
     }
 
     /// Query live and upcoming videos.
@@ -167,7 +169,7 @@ impl Client {
     ///
     /// Will return [`Error::InvalidResponse`] if the API returned a faulty response or server error.
     pub async fn live(&self, parameters: &VideoFilter) -> Result<PaginatedResult<Video>, Error> {
-        self.query_videos("/live", parameters).await
+        Self::query_videos(&self.http, "/live", parameters).await
     }
 
     /// Query videos related to channel.
@@ -693,12 +695,11 @@ impl Client {
 
     #[fix_hidden_lifetime_bug]
     async fn query_videos(
-        &self,
+        http: &reqwest::Client,
         endpoint: &'static str,
         parameters: &VideoFilter,
     ) -> Result<PaginatedResult<Video>, Error> {
-        let res = self
-            .http
+        let res = http
             .get(format!("{}{}", Self::ENDPOINT, endpoint))
             .query(&parameters)
             .send()
@@ -717,4 +718,5 @@ impl Client {
 
         Ok(videos)
     }
+
 }
