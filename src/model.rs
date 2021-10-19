@@ -692,6 +692,14 @@ impl<T> IntoIterator for PaginatedResult<T> {
     }
 }
 
+#[allow(clippy::from_over_into)]
+impl<T> Into<Vec<T>> for PaginatedResult<T> {
+    #[inline]
+    fn into(self) -> Vec<T> {
+        self.into_items()
+    }
+}
+
 #[serde_as]
 #[derive(Deserialize, Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 /// A video, that can be either a stream, premiere, or clip.
