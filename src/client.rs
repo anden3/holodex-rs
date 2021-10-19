@@ -11,7 +11,7 @@ use crate::{
     util::validate_response,
 };
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 /// The client used for interacting with the Holodex API.
 pub struct Client {
     http: reqwest::Client,
