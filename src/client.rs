@@ -11,6 +11,11 @@ use crate::{
     util::validate_response,
 };
 
+#[cfg(feature = "streams")]
+use async_stream::try_stream;
+#[cfg(feature = "streams")]
+use futures::Stream;
+
 #[derive(Debug, Clone)]
 /// The client used for interacting with the Holodex API.
 pub struct Client {
@@ -118,6 +123,44 @@ impl Client {
         Self::query_videos(&self.http, "/videos", parameters).await
     }
 
+    #[cfg(feature = "streams")]
+    /// Returns a stream of all videos matching the `filter`.
+    ///
+    /// # Examples
+    ///
+    /// Get all streams that are currently live.
+    /// ```rust
+    /// # fn main() -> Result<(), holodex::errors::Error> {
+    /// # tokio_test::block_on(async {
+    /// use holodex::model::{builders::VideoFilterBuilder, VideoStatus, VideoType};
+    /// use futures::{self, pin_mut, StreamExt, TryStreamExt};
+    ///
+    /// # if std::env::var_os("HOLODEX_API_TOKEN").is_none() {
+    /// #   std::env::set_var("HOLODEX_API_TOKEN", "my-api-token");
+    /// # }
+    /// let token = std::env::var("HOLODEX_API_TOKEN").unwrap();
+    /// let client = holodex::Client::new(&token)?;
+    ///
+    /// let filter = VideoFilterBuilder::new()
+    ///     .video_type(VideoType::Stream)
+    ///     .status(&[VideoStatus::Live])
+    ///     .build();
+    ///
+    /// let stream = client.video_stream(&filter);
+    /// pin_mut!(stream);
+    ///
+    /// while let Some(video) = stream.try_next().await? {
+    ///     println!("{}", video.title);
+    /// }
+    /// # Ok(())
+    /// # })
+    /// # }
+    /// ```
+    pub fn video_stream<'a>(
+        &'a self,
+        parameters: &'a VideoFilter,
+    ) -> impl Stream<Item = Result<Video, Error>> + 'a {
+        Self::stream_endpoint(&self.http, "/videos", parameters)
     }
 
     /// Query live and upcoming videos.
@@ -719,4 +762,47 @@ impl Client {
         Ok(videos)
     }
 
+    #[cfg(feature = "streams")]
+    #[allow(clippy::cast_possible_wrap)]
+    fn stream_endpoint<'a>(
+        http: &'a reqwest::Client,
+        endpoint: &'static str,
+        parameters: &'a VideoFilter,
+    ) -> impl Stream<Item = Result<Video, Error>> + 'a {
+        use tracing::error;
+
+        try_stream! {
+            const CHUNK_SIZE: u32 = 50;
+
+            let mut filter = VideoFilter {
+                paginated: true,
+                limit: CHUNK_SIZE,
+                offset: 0,
+                ..parameters.clone()
+            };
+            let mut counter = 0_u32;
+
+            loop {
+                let (total, videos) = match Self::query_videos(http, endpoint, &filter).await? {
+                    PaginatedResult::Page { total, items } => (total, items),
+                    PaginatedResult::Items(_) => {
+                        error!("Non-paginated result returned despite asking for paginated.");
+                        break;
+                    }
+                };
+
+                counter += videos.len() as u32;
+
+                for video in videos {
+                    yield video;
+                }
+
+                if counter >= total.into() {
+                    break;
+                }
+
+                filter.offset += CHUNK_SIZE as i32;
+            }
+        }
+    }
 }

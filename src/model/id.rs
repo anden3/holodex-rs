@@ -5,6 +5,7 @@ use std::{fmt::Display, ops::Deref, str::FromStr};
 
 use regex::Regex;
 use serde::{self, Deserialize, Serialize};
+use tracing::error;
 
 use crate::{
     errors::Error,
@@ -13,6 +14,11 @@ use crate::{
     },
     Client,
 };
+
+#[cfg(feature = "streams")]
+use async_stream::try_stream;
+#[cfg(feature = "streams")]
+use futures::Stream;
 
 #[derive(Debug, Clone, PartialEq, Eq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
 /// The ID of a video.
@@ -263,6 +269,37 @@ impl ChannelId {
             .await
     }
 
+    #[cfg(feature = "streams")]
+    /// Returns a stream of all videos that this channel has uploaded.
+    ///
+    /// /// Print the latest 200 videos uploaded by Kiara.
+    /// ```rust
+    /// # fn main() -> Result<(), holodex::errors::Error> {
+    /// # tokio_test::block_on(async {
+    /// use holodex::model::id::ChannelId;
+    /// use futures::{self, pin_mut, StreamExt, TryStreamExt};
+    ///
+    /// # if std::env::var_os("HOLODEX_API_TOKEN").is_none() {
+    /// #   std::env::set_var("HOLODEX_API_TOKEN", "my-api-token");
+    /// # }
+    /// let token = std::env::var("HOLODEX_API_TOKEN").unwrap();
+    /// let client = holodex::Client::new(&token)?;
+    ///
+    /// let channel_id: ChannelId = "UCHsx4Hqa-1ORjQTh9TYDhww".parse()?;
+    ///
+    /// let stream = channel_id.video_stream(&client).take(200);
+    /// pin_mut!(stream);
+    ///
+    /// while let Some(video) = stream.try_next().await? {
+    ///     println!("{}", video.title);
+    /// }
+    /// # Ok(())
+    /// # })
+    /// # }
+    pub fn video_stream(self, client: &Client) -> impl Stream<Item = Result<Video, Error>> + '_ {
+        Self::stream_channel_video_type(client, self, ChannelVideoType::Videos)
+    }
+
     /// Get clips related to this channel.
     ///
     /// # Examples
@@ -305,6 +342,37 @@ impl ChannelId {
                 },
             )
             .await
+    }
+
+    #[cfg(feature = "streams")]
+    /// Returns a stream of all videos that this channel has uploaded.
+    ///
+    /// /// Print the latest 200 clips made about Kiara.
+    /// ```rust
+    /// # fn main() -> Result<(), holodex::errors::Error> {
+    /// # tokio_test::block_on(async {
+    /// use holodex::model::id::ChannelId;
+    /// use futures::{self, pin_mut, StreamExt, TryStreamExt};
+    ///
+    /// # if std::env::var_os("HOLODEX_API_TOKEN").is_none() {
+    /// #   std::env::set_var("HOLODEX_API_TOKEN", "my-api-token");
+    /// # }
+    /// let token = std::env::var("HOLODEX_API_TOKEN").unwrap();
+    /// let client = holodex::Client::new(&token)?;
+    ///
+    /// let channel_id: ChannelId = "UCHsx4Hqa-1ORjQTh9TYDhww".parse()?;
+    ///
+    /// let stream = channel_id.clip_stream(&client).take(200);
+    /// pin_mut!(stream);
+    ///
+    /// while let Some(clip) = stream.try_next().await? {
+    ///     println!("{}", clip.title);
+    /// }
+    /// # Ok(())
+    /// # })
+    /// # }
+    pub fn clip_stream(self, client: &Client) -> impl Stream<Item = Result<Video, Error>> + '_ {
+        Self::stream_channel_video_type(client, self, ChannelVideoType::Clips)
     }
 
     /// Get collabs from other videos that mention this channel.
@@ -351,6 +419,78 @@ impl ChannelId {
             .await
     }
 
+    #[cfg(feature = "streams")]
+    /// Returns a stream of all collabs from other videos that have mentioned this channel.
+    ///
+    /// /// Print the latest 50 collabs with Subaru.
+    /// ```rust
+    /// # fn main() -> Result<(), holodex::errors::Error> {
+    /// # tokio_test::block_on(async {
+    /// use holodex::model::id::ChannelId;
+    /// use futures::{self, pin_mut, StreamExt, TryStreamExt};
+    ///
+    /// # if std::env::var_os("HOLODEX_API_TOKEN").is_none() {
+    /// #   std::env::set_var("HOLODEX_API_TOKEN", "my-api-token");
+    /// # }
+    /// let token = std::env::var("HOLODEX_API_TOKEN").unwrap();
+    /// let client = holodex::Client::new(&token)?;
+    ///
+    /// let channel_id: ChannelId = "UCvzGlP9oQwU--Y0r9id_jnA".parse()?;
+    ///
+    /// let stream = channel_id.collab_stream(&client).take(50);
+    /// pin_mut!(stream);
+    ///
+    /// while let Some(collab) = stream.try_next().await? {
+    ///     println!("{}", collab.title);
+    /// }
+    /// # Ok(())
+    /// # })
+    /// # }
+    pub fn collab_stream(self, client: &Client) -> impl Stream<Item = Result<Video, Error>> + '_ {
+        Self::stream_channel_video_type(client, self, ChannelVideoType::Collabs)
+    }
+
+    #[cfg(feature = "streams")]
+    #[allow(clippy::cast_possible_wrap)]
+    fn stream_channel_video_type(
+        client: &Client,
+        channel_id: ChannelId,
+        video_type: ChannelVideoType,
+    ) -> impl Stream<Item = Result<Video, Error>> + '_ {
+        try_stream! {
+            const CHUNK_SIZE: u32 = 50;
+
+            let mut filter = ChannelVideoFilter {
+                paginated: true,
+                limit: CHUNK_SIZE,
+                ..ChannelVideoFilter::default()
+            };
+            let mut counter = 0_u32;
+
+            loop {
+                let (total, videos) = match client.videos_from_channel(&channel_id, video_type, &filter).await? {
+                    PaginatedResult::Page { total, items } => (total, items),
+                    PaginatedResult::Items(_) => {
+                        error!("Non-paginated result returned despite asking for paginated.");
+                        break;
+                    }
+                };
+
+                counter += videos.len() as u32;
+
+                for video in videos {
+                    yield video;
+                }
+
+                if counter >= total.into() {
+                    break;
+                }
+
+                filter.offset += CHUNK_SIZE as i32;
+            }
+        }
+    }
+}
 
 impl Display for ChannelId {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {

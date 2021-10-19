@@ -15,6 +15,10 @@ categories = ["api-bindings"]
 [dev-dependencies.tokio-test]
 version = "0.4.2"
 
+[dependencies.async-stream]
+version = "0.3.2"
+optional = true
+
 [dependencies.chrono]
 version = "0.4.19"
 default_features = false
@@ -22,6 +26,12 @@ features = ["std", "serde"]
 
 [dependencies.fix-hidden-lifetime-bug]
 version = "0.2.4"
+
+[dependencies.futures]
+version = "0.3.17"
+default-features = false
+features = ["std"]
+optional = true
 
 [dependencies.itertools]
 version = "0.10.1"
@@ -61,3 +71,7 @@ version = "1.0.30"
 
 [dependencies.tracing]
 version = "0.1.29"
+
+[features]
+default = ["streams"]
+streams = ["async-stream", "futures"]
