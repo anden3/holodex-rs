@@ -384,7 +384,7 @@ impl FromStr for ChannelId {
     #[allow(clippy::unwrap_in_result)]
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         #[allow(clippy::expect_used)]
-        let regex = Regex::new(r"[0-9A-Za-z_-]{21}[AQgw]").expect("Channel ID regex broke.");
+        let regex = Regex::new(r"UC[0-9a-zA-Z_-]{21}[AQgw]").expect("Channel ID regex broke.");
 
         Ok(regex
             .find(s)
