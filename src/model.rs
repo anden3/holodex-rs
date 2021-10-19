@@ -552,6 +552,16 @@ impl<T> PaginatedResult<T> {
             PaginatedResult::Items(items) | PaginatedResult::Page { items, .. } => items,
         }
     }
+
+    #[must_use]
+    #[inline]
+    #[allow(clippy::missing_const_for_fn)]
+    /// Convert response into a [`Vec<T>`].
+    pub fn into_items(self) -> Vec<T> {
+        match self {
+            PaginatedResult::Items(items) | PaginatedResult::Page { items, .. } => items,
+        }
+    }
 }
 
 impl<T> Deref for PaginatedResult<T> {
