@@ -4,8 +4,11 @@ use std::fmt::Display;
 
 use serde::{self, Serialize};
 
+use crate::errors::Error;
+
 use super::{
     id::{ChannelId, VideoId},
+    ChannelFilter, ChannelSortingCriteria, ChannelType, CommentSearch, ExtraVideoInfo, Language,
     Order, Organisation, SearchOrder, VideoFilter, VideoSearch, VideoSearchCondition,
     VideoSortingCriteria, VideoStatus, VideoType,
 };
@@ -169,6 +172,99 @@ impl Display for VideoFilterBuilder {
 impl Into<VideoFilter> for VideoFilterBuilder {
     fn into(self) -> VideoFilter {
         self.filter
+    }
+}
+
+#[derive(Serialize, Debug, Default, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
+/// Builder for creating a [`ChannelFilter`].
+pub struct ChannelFilterBuilder {
+    filter: ChannelFilter,
+}
+
+impl ChannelFilterBuilder {
+    #[inline]
+    #[must_use]
+    /// Create a new `ChannelFilterBuilder` with default values.
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    #[inline]
+    #[must_use]
+    /// Sort channels by the given criteria.
+    pub const fn sort_by(mut self, sort_by: ChannelSortingCriteria) -> Self {
+        self.filter.sort_by = sort_by;
+        self
+    }
+
+    #[inline]
+    #[must_use]
+    /// Sort channels in the given order.
+    pub const fn order(mut self, order: Order) -> Self {
+        self.filter.order = order;
+        self
+    }
+
+    #[inline]
+    #[must_use]
+    /// Only return channels that uses any of the given languages as their main language.
+    pub fn language(mut self, lang: &[Language]) -> Self {
+        self.filter.languages = lang.to_vec();
+        self
+    }
+
+    #[inline]
+    #[must_use]
+    /// Only return channels of the given type.
+    pub const fn channel_type(mut self, channel_type: ChannelType) -> Self {
+        self.filter.channel_type = Some(channel_type);
+        self
+    }
+
+    #[inline]
+    #[must_use]
+    #[allow(clippy::missing_const_for_fn)]
+    /// Only return channels part of the given organisation.
+    pub fn organisation(mut self, organisation: Organisation) -> Self {
+        self.filter.organisation = Some(organisation);
+        self
+    }
+
+    #[inline]
+    #[must_use]
+    /// Limit the number of returned channels to the given value.
+    ///
+    /// Value must be between `0` and `50`, inclusive.
+    pub const fn limit(mut self, limit: u32) -> Self {
+        self.filter.limit = limit;
+        self
+    }
+
+    #[inline]
+    #[must_use]
+    /// Offset the returned values by the given amount of places.
+    pub const fn offset(mut self, offset: i32) -> Self {
+        self.filter.offset = offset;
+        self
+    }
+
+    /// Consume the builder, returning the constructed filter.
+    ///
+    /// # Errors
+    /// Will return [`Error::FilterCreationError`] if the filter was constructed with invalid arguments.
+    pub fn build(self) -> Result<ChannelFilter, Error> {
+        match &self.filter.limit {
+            0..=50 => (),
+            _ => {
+                return Err(Error::FilterCreationError(format!(
+                "Could not instantiate {} with a limit of {}. Valid range is 0 to 50, inclusive.",
+                stringify!(ChannelFilter),
+                self.filter.limit
+            )))
+            }
+        }
+
+        Ok(self.filter)
     }
 }
 

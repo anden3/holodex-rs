@@ -37,6 +37,10 @@ pub enum Error {
     #[error("The provided channel ID was not valid: {0}")]
     /// An invalid channel ID was passed to the API.
     InvalidChannelId(String),
+
+    #[error("The filter could not be constructed due to invalid arguments.")]
+    /// A filter could not be constructed due to invalid arguments.
+    FilterCreationError(String),
 }
 
 #[derive(Error, Diagnostic, Debug)]

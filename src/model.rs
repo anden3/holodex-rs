@@ -185,6 +185,49 @@ impl Display for ChannelVideoFilter {
 
 #[serde_as]
 #[derive(Serialize, Debug, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
+/// Filtering criteria for channels.
+pub struct ChannelFilter {
+    #[serde(rename = "lang")]
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    /// Only show channels that uses any of the given languages as their main language.
+    pub languages: Vec<Language>,
+    /// In what order the channels should be sorted, ascending or descending.
+    pub order: Order,
+    #[serde(rename = "sort")]
+    /// By what criteria the channels should be sorted.
+    pub sort_by: ChannelSortingCriteria,
+
+    #[serde(rename = "org")]
+    /// Only return channels from a specific organization.
+    pub organisation: Option<Organisation>,
+    #[serde(rename = "type")]
+    /// Only show channels of the given type.
+    pub channel_type: Option<ChannelType>,
+
+    /// Limit the number of returned channels to the given value.
+    ///
+    /// Value must be between `0` and `50`, inclusive.
+    pub limit: u32,
+    /// Offset the returned values by the given amount of places.
+    pub offset: i32,
+}
+
+impl Default for ChannelFilter {
+    fn default() -> Self {
+        Self {
+            languages: Vec::new(),
+            order: Order::Ascending,
+            sort_by: ChannelSortingCriteria::Organisation,
+            organisation: None,
+            channel_type: None,
+            limit: 25,
+            offset: 0,
+        }
+    }
+}
+
+#[serde_as]
+#[derive(Serialize, Debug, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
 /// Filtering criteria for video searches.
 pub struct VideoSearch {
     #[serde(rename = "sort")]
@@ -470,6 +513,52 @@ pub enum VideoSortingCriteria {
     SongCount,
     /// Sort alphabetically by the uploader's channel ID.
     ChannelId,
+}
+
+#[non_exhaustive]
+#[derive(
+    Serialize, Deserialize, EnumDisplay, Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash,
+)]
+#[serde(rename_all = "snake_case")]
+/// Different criteria for sorting channels.
+pub enum ChannelSortingCriteria {
+    /// Sort by [`Channel::id`].
+    Id,
+    /// Sort alphabetically by the channel's name..
+    Name,
+    /// Sort alphabetically by the channel's English name.
+    EnglishName,
+    /// Sort by the [`ChannelType`] of the channel.
+    Type,
+    #[serde(rename = "org")]
+    /// Sort by the [`Organisation`] the channel belongs to.
+    Organisation,
+    #[serde(rename = "suborg")]
+    /// Sort by the sub-organisation the channel belongs to.
+    SubOrganisation,
+    /// Sort by the URL of the channel's profile picture.
+    Photo,
+    /// Sort by the URL of the channel's banner image.
+    Banner,
+    /// Sort by the channel's Twitter handle.
+    Twitter,
+    /// Sort by the number of videos the channel has uploaded.
+    VideoCount,
+    /// Sort by the number of subscribers the channel has.
+    SubscriberCount,
+    /// Sort by the number of views the channel has.
+    ViewCount,
+    /// Sort by the number of clips made that involves the channel.
+    ClipCount,
+    #[serde(rename = "lang")]
+    /// Sort by the primary [`Language`] of the channel.
+    Language,
+    /// Sort by when the channel was first published.
+    PublishedAt,
+    /// Sort by if the channel is marked as [`Channel::inactive`] or not.
+    Inactive,
+    /// Sort alphabetically by channel description.
+    Description,
 }
 
 #[non_exhaustive]

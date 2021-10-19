@@ -5,8 +5,8 @@ use crate::{
     errors::Error,
     model::{
         id::{ChannelId, VideoId},
-        Channel, ChannelVideoFilter, ChannelVideoType, CommentSearch, Language, PaginatedResult,
-        Video, VideoFilter, VideoFull, VideoSearch,
+        Channel, ChannelFilter, ChannelVideoFilter, ChannelVideoType, CommentSearch, Language,
+        PaginatedResult, Video, VideoFilter, VideoFull, VideoSearch,
     },
     util::validate_response,
 };
@@ -350,6 +350,70 @@ impl Client {
             })?;
 
         Ok(channel)
+    }
+
+    /// Get all channels matching the given filter.
+    ///
+    /// # Examples
+    ///
+    /// Print the top 10 vtuber channels by number of subscribers.
+    /// ```rust
+    /// # fn main() -> Result<(), holodex::errors::Error> {
+    /// # tokio_test::block_on(async {
+    /// use holodex::model::{
+    ///     builders::ChannelFilterBuilder, ChannelFilter, ChannelSortingCriteria,
+    ///     Order, Organisation
+    /// };
+    ///
+    /// # if std::env::var_os("HOLODEX_API_TOKEN").is_none() {
+    /// #   std::env::set_var("HOLODEX_API_TOKEN", "my-api-token");
+    /// # }
+    /// let token = std::env::var("HOLODEX_API_TOKEN").unwrap();
+    /// let client = holodex::Client::new(&token)?;
+    ///
+    /// let filter = ChannelFilterBuilder::new()
+    ///     .sort_by(ChannelSortingCriteria::SubscriberCount)
+    ///     .order(Order::Descending)
+    ///     .limit(10)
+    ///     .build()?;
+    ///
+    /// let channels = client.channels(&filter).await?;
+    ///
+    /// for channel in channels {
+    ///     println!(
+    ///         "{} has {} subscribers!",
+    ///         channel.name, channel.stats.subscriber_count.unwrap_or_default()
+    ///     );
+    /// }
+    /// # Ok(())
+    /// # })
+    /// # }
+    /// ```
+    ///
+    /// # Errors
+    /// Will return [`Error::ApiRequestFailed`] if sending the API request fails.
+    ///
+    /// Will return [`Error::InvalidResponse`] if the API returned a faulty response or server error.
+    pub async fn channels(&self, filter: &ChannelFilter) -> Result<Vec<Channel>, Error> {
+        let res = self
+            .http
+            .get(format!("{}/channels", Self::ENDPOINT))
+            .query(filter)
+            .send()
+            .await
+            .map_err(|e| Error::ApiRequestFailed {
+                endpoint: "/channels",
+                source: e,
+            })?;
+
+        let channels = validate_response(res)
+            .await
+            .map_err(|e| Error::InvalidResponse {
+                endpoint: "/channels",
+                source: e,
+            })?;
+
+        Ok(channels)
     }
 
     /// Get a single video's metadata.
