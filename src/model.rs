@@ -637,7 +637,7 @@ impl Into<u32> for PaginatedTotal {
 /// A paginated result.
 pub enum PaginatedResult<T> {
     /// All items that matched the criteria.
-    Items(Vec<T>),
+    Items(#[serde(default = "Default::default")] Vec<T>),
     /// A paginated result.
     Page {
         /// How many items in total matched the criteria.
@@ -701,7 +701,7 @@ impl<T> Into<Vec<T>> for PaginatedResult<T> {
 }
 
 #[serde_as]
-#[derive(Deserialize, Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Deserialize, Debug, Clone, Eq, PartialOrd, Ord)]
 /// A video, that can be either a stream, premiere, or clip.
 pub struct Video {
     /// The ID of the video.
@@ -747,6 +747,38 @@ pub struct Video {
     #[serde(alias = "channel_id")]
     /// The channel the video was uploaded by.
     pub channel: VideoChannel,
+}
+
+impl PartialEq for Video {
+    fn eq(&self, other: &Self) -> bool {
+        self.id == other.id
+            && self.title == other.title
+            && self.video_type == other.video_type
+            && self.topic == other.topic
+            && self.published_at == other.published_at
+            && self.available_at == other.available_at
+            && self.status == other.status
+            && self.live_info == other.live_info
+            && self.description == other.description
+            && self.song_count == other.song_count
+            && self.channel == other.channel
+    }
+}
+
+impl std::hash::Hash for Video {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.id.hash(state);
+        self.title.hash(state);
+        self.video_type.hash(state);
+        self.topic.hash(state);
+        self.published_at.hash(state);
+        self.available_at.hash(state);
+        self.status.hash(state);
+        self.live_info.hash(state);
+        self.description.hash(state);
+        self.song_count.hash(state);
+        self.channel.hash(state);
+    }
 }
 
 #[derive(Deserialize, Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -959,7 +991,7 @@ impl Display for Comment {
 }
 
 #[serde_as]
-#[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Deserialize, Serialize, Debug, Clone, Eq, PartialOrd, Ord)]
 /// A song that was played in a video.
 pub struct Song {
     /// The name of the song.
@@ -980,6 +1012,24 @@ pub struct Song {
     #[serde_as(as = "DurationSeconds<i64>")]
     /// When in the video the song finished being played.
     pub end: Duration,
+}
+
+impl PartialEq for Song {
+    fn eq(&self, other: &Self) -> bool {
+        self.name == other.name
+            && self.artist == other.artist
+            && self.artwork == other.artwork
+            && self.itunes_id == other.itunes_id
+    }
+}
+
+impl std::hash::Hash for Song {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.name.hash(state);
+        self.artist.hash(state);
+        self.artwork.hash(state);
+        self.itunes_id.hash(state);
+    }
 }
 
 impl Display for Song {
