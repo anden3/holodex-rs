@@ -477,12 +477,13 @@ impl ChannelId {
                 };
 
                 counter += videos.len() as u32;
+                let total: u32 = total.into();
 
                 for video in videos {
                     yield video;
                 }
 
-                if counter >= total.into() {
+                if counter >= total {
                     break;
                 }
 
