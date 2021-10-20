@@ -5,6 +5,35 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v0.2.1 (2021-10-20)
+
+### Bug Fixes
+
+ - <csr-id-f261bae57c37ba6a19e4f8d35a4a63bd90519146/> default filter limit lowered
+ - <csr-id-16cf9aeb38432b19abed33fd4caface212491c59/> fix compile error as crate
+   The stream methods failed to compile when used as a crate due to bad type inference.
+   Extra type information has been added.
+
+### Commit Statistics
+
+<csr-read-only-do-not-edit/>
+
+ - 3 commits contributed to the release.
+ - 3 commits where understood as [conventional](https://www.conventionalcommits.org).
+ - 0 issues like '(#ID)' where seen in commit messages
+
+### Commit Details
+
+<csr-read-only-do-not-edit/>
+
+<details><summary>view details</summary>
+
+ * **Uncategorized**
+    - reduce redundant error messages ([`43c2687`](https://github.com/git///anden3/holodex-rs.git/commit/43c26872f693c4fe5ef8c59f2bc36055af949742))
+    - default filter limit lowered ([`f261bae`](https://github.com/git///anden3/holodex-rs.git/commit/f261bae57c37ba6a19e4f8d35a4a63bd90519146))
+    - fix compile error as crate ([`16cf9ae`](https://github.com/git///anden3/holodex-rs.git/commit/16cf9aeb38432b19abed33fd4caface212491c59))
+</details>
+
 ## v0.2.0 (2021-10-19)
 
 ### New Features
@@ -45,7 +74,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <csr-read-only-do-not-edit/>
 
- - 17 commits contributed to the release.
+ - 18 commits contributed to the release.
  - 17 commits where understood as [conventional](https://www.conventionalcommits.org).
  - 0 issues like '(#ID)' where seen in commit messages
 
@@ -56,6 +85,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 <details><summary>view details</summary>
 
  * **Uncategorized**
+    - Adjusting changelogs prior to release of holodex v0.2.0 ([`15c2495`](https://github.com/git///anden3/holodex-rs.git/commit/15c24957b1ab571ab917cef68bbbdee98a01aef9))
     - add feature-gated streaming methods ([`413fde1`](https://github.com/git///anden3/holodex-rs.git/commit/413fde120f179f4eb28eb26fc72f42b7da3aeca8))
     - add manual impl's of some traits ([`1963b86`](https://github.com/git///anden3/holodex-rs.git/commit/1963b860f315f6f530e72c127bdd234bdb1b67f5))
     - enable more clippy flags ([`1f09ff2`](https://github.com/git///anden3/holodex-rs.git/commit/1f09ff259749fe3253a9f137bb2a621cfbdcceb7))
