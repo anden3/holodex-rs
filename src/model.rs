@@ -83,7 +83,7 @@ impl Default for VideoFilter {
             id: Vec::new(),
             include: vec![ExtraVideoInfo::LiveInfo],
             lang: vec![Language::All],
-            limit: 9999,
+            limit: 100,
             max_upcoming_hours: 48,
             mentioned_channel_id: None,
             offset: 0,
