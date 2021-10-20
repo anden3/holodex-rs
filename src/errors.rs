@@ -57,13 +57,13 @@ pub enum ValidationError {
 #[derive(Error, Diagnostic, Debug)]
 /// Errors that occur when the API returns an error code.
 pub enum ServerError {
-    #[error("Server returned an error code: {0:?}")]
+    #[error("Server returned an error code: {0}")]
     /// The API returned an error code.
     ErrorCode(#[from] reqwest::Error),
-    #[error("Server returned error {0:?} with message: {1}")]
+    #[error("Server returned error {0} with message: {1}")]
     /// The API returned an error code with a message.
     ErrorCodeWithValue(#[source] reqwest::Error, String),
-    #[error("Server returned error {0:?} with a message that could not be parsed: {1:?}")]
+    #[error("Server returned error {0} with a message that could not be parsed: {1:?}")]
     /// The API returned an error code with a message that could not be parsed.
     ErrorCodeWithValueParseError(#[source] reqwest::Error, ParseError),
 }
