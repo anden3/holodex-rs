@@ -769,7 +769,7 @@ impl Client {
         endpoint: &'static str,
         parameters: &'a VideoFilter,
     ) -> impl Stream<Item = Result<Video, Error>> + 'a {
-        use tracing::error;
+        use tracing::{error, trace};
 
         try_stream! {
             const CHUNK_SIZE: u32 = 50;
@@ -782,6 +782,8 @@ impl Client {
             };
             let mut counter = 0_u32;
 
+            trace!(?filter, "Starting stream.");
+
             loop {
                 let (total, videos) = match Self::query_videos(http, endpoint, &filter).await? {
                     PaginatedResult::Page { total, items } => (total, items),
@@ -793,6 +795,9 @@ impl Client {
 
                 counter += videos.len() as u32;
                 let total: u32 = total.into();
+
+                trace!(%total, video_count = videos.len(), %counter, offset = %filter.offset,
+                    "Stream page received.");
 
                 for video in videos {
                     yield video;
