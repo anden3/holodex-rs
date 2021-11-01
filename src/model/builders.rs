@@ -168,10 +168,9 @@ impl Display for VideoFilterBuilder {
     }
 }
 
-#[allow(clippy::from_over_into)]
-impl Into<VideoFilter> for VideoFilterBuilder {
-    fn into(self) -> VideoFilter {
-        self.filter
+impl From<VideoFilterBuilder> for VideoFilter {
+    fn from(builder: VideoFilterBuilder) -> Self {
+        builder.filter
     }
 }
 
@@ -378,10 +377,9 @@ impl VideoSearchBuilder {
     }
 }
 
-#[allow(clippy::from_over_into)]
-impl Into<VideoSearch> for VideoSearchBuilder {
-    fn into(self) -> VideoSearch {
-        self.search
+impl From<VideoSearchBuilder> for VideoSearch {
+    fn from(builder: VideoSearchBuilder) -> Self {
+        builder.search
     }
 }
 
@@ -497,9 +495,8 @@ impl CommentSearchBuilder {
     }
 }
 
-#[allow(clippy::from_over_into)]
-impl Into<CommentSearch> for CommentSearchBuilder {
-    fn into(self) -> CommentSearch {
-        self.search
+impl From<CommentSearchBuilder> for CommentSearch {
+    fn from(builder: CommentSearchBuilder) -> Self {
+        builder.search
     }
 }

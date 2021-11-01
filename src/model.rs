@@ -621,11 +621,10 @@ pub enum PaginatedTotal {
     String(#[serde_as(as = "DisplayFromStr")] u32),
 }
 
-#[allow(clippy::from_over_into)]
-impl Into<u32> for PaginatedTotal {
+impl From<PaginatedTotal> for u32 {
     #[inline]
-    fn into(self) -> u32 {
-        match self {
+    fn from(total: PaginatedTotal) -> Self {
+        match total {
             PaginatedTotal::U32(n) | PaginatedTotal::String(n) => n,
         }
     }
@@ -692,11 +691,10 @@ impl<T> IntoIterator for PaginatedResult<T> {
     }
 }
 
-#[allow(clippy::from_over_into)]
-impl<T> Into<Vec<T>> for PaginatedResult<T> {
+impl<T> From<PaginatedResult<T>> for Vec<T> {
     #[inline]
-    fn into(self) -> Vec<T> {
-        self.into_items()
+    fn from(result: PaginatedResult<T>) -> Self {
+        result.into_items()
     }
 }
 
