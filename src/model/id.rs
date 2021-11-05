@@ -1,7 +1,7 @@
 //! Various types wrapping different IDs used in the API.
 #![allow(clippy::module_name_repetitions)]
 
-use std::{fmt::Display, ops::Deref, str::FromStr};
+use std::{convert::TryFrom, fmt::Display, ops::Deref, str::FromStr};
 
 use regex::Regex;
 use serde::{self, Deserialize, Serialize};
@@ -20,9 +20,15 @@ use async_stream::try_stream;
 #[cfg(feature = "streams")]
 use futures::Stream;
 
+#[cfg(not(feature = "sso"))]
 #[derive(Debug, Clone, PartialEq, Eq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
 /// The ID of a video.
 pub struct VideoId(pub(crate) String);
+
+#[cfg(feature = "sso")]
+#[derive(Debug, Clone, PartialEq, Eq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
+/// The ID of a video.
+pub struct VideoId(pub(crate) smartstring::alias::String);
 
 impl VideoId {
     /// Get all the metadata associated with this channel.
@@ -156,15 +162,11 @@ impl Deref for VideoId {
     }
 }
 
-impl From<&str> for VideoId {
-    fn from(s: &str) -> Self {
-        Self(s.to_owned())
-    }
-}
+impl TryFrom<String> for VideoId {
+    type Error = Error;
 
-impl From<String> for VideoId {
-    fn from(s: String) -> Self {
-        Self(s)
+    fn try_from(s: String) -> Result<Self, Self::Error> {
+        s.parse()
     }
 }
 
@@ -177,17 +179,25 @@ impl FromStr for VideoId {
         let regex =
             Regex::new(r"[0-9A-Za-z_-]{10}[048AEIMQUYcgkosw]").expect("Video ID regex broke.");
 
-        Ok(regex
-            .find(s)
-            .ok_or_else(|| Error::InvalidVideoId(s.to_owned()))?
-            .as_str()
-            .into())
+        Ok(Self(
+            regex
+                .find(s)
+                .ok_or_else(|| Error::InvalidVideoId(s.to_owned()))?
+                .as_str()
+                .into(),
+        ))
     }
 }
 
+#[cfg(not(feature = "sso"))]
 #[derive(Debug, Clone, PartialEq, Eq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
 /// The ID of a channel.
 pub struct ChannelId(pub(crate) String);
+
+#[cfg(feature = "sso")]
+#[derive(Debug, Clone, PartialEq, Eq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
+/// The ID of a channel.
+pub struct ChannelId(pub(crate) smartstring::alias::String);
 
 impl ChannelId {
     /// Get all the metadata associated with this channel.
@@ -507,15 +517,11 @@ impl Deref for ChannelId {
     }
 }
 
-impl From<&str> for ChannelId {
-    fn from(s: &str) -> Self {
-        Self(s.to_owned())
-    }
-}
+impl TryFrom<String> for ChannelId {
+    type Error = Error;
 
-impl From<String> for ChannelId {
-    fn from(s: String) -> Self {
-        Self(s)
+    fn try_from(s: String) -> Result<Self, Self::Error> {
+        s.parse()
     }
 }
 
@@ -527,10 +533,12 @@ impl FromStr for ChannelId {
         #[allow(clippy::expect_used)]
         let regex = Regex::new(r"UC[0-9a-zA-Z_-]{21}[AQgw]").expect("Channel ID regex broke.");
 
-        Ok(regex
-            .find(s)
-            .ok_or_else(|| Error::InvalidChannelId(s.to_owned()))?
-            .as_str()
-            .into())
+        Ok(Self(
+            regex
+                .find(s)
+                .ok_or_else(|| Error::InvalidChannelId(s.to_owned()))?
+                .as_str()
+                .into(),
+        ))
     }
 }

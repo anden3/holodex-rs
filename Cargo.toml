@@ -62,6 +62,11 @@ features = ["macros", "chrono"]
 [dependencies.serde-enum-str]
 version = "0.2.4"
 
+[dependencies.smartstring]
+version = "0.2.9"
+features = ["serde"]
+optional = true
+
 [dependencies.strum]
 version = "0.22"
 features = ["derive"]
@@ -73,5 +78,6 @@ version = "1.0.30"
 version = "0.1.29"
 
 [features]
-default = ["streams"]
+default = ["streams", "sso"]
 streams = ["async-stream", "futures"]
+sso = ["smartstring"]

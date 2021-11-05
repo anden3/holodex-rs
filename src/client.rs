@@ -239,7 +239,7 @@ impl Client {
     ///     languages: vec![Language::English],
     ///     ..Default::default()
     /// };
-    /// let pekora_ch_id = "UC1DCedRgGHBdm81E1llLhOQ".into();
+    /// let pekora_ch_id = "UC1DCedRgGHBdm81E1llLhOQ".parse()?;
     /// let english_clips = client.videos_from_channel(&pekora_ch_id, ChannelVideoType::Clips, &parameters)
     ///     .await?;
     ///
@@ -307,7 +307,7 @@ impl Client {
     /// let token = std::env::var("HOLODEX_API_TOKEN").unwrap();
     /// let client = holodex::Client::new(&token)?;
     ///
-    /// let channels = vec!["UCoSrY_IQQVpmIRZ9Xf-y93g".into(), "UCyl1z3jo3XHR1riLFKG5UAg".into()];
+    /// let channels = vec!["UCoSrY_IQQVpmIRZ9Xf-y93g".parse()?, "UCyl1z3jo3XHR1riLFKG5UAg".parse()?];
     /// let streams = client.live_from_channels(&channels).await?;
     ///
     /// if !streams.is_empty() {
@@ -361,7 +361,7 @@ impl Client {
     /// let token = std::env::var("HOLODEX_API_TOKEN").unwrap();
     /// let client = holodex::Client::new(&token)?;
     ///
-    /// let channel_id = "UCNVEsYbiZjH5QLmGeSgTSzg".into();
+    /// let channel_id = "UCNVEsYbiZjH5QLmGeSgTSzg".parse()?;
     /// let channel = client.channel(&channel_id).await?;
     ///
     /// if let Some(subs) = &channel.stats.subscriber_count {
@@ -475,7 +475,7 @@ impl Client {
     /// let token = std::env::var("HOLODEX_API_TOKEN").unwrap();
     /// let client = holodex::Client::new(&token)?;
     ///
-    /// let coco_graduation = "IhiievWaZMI".into();
+    /// let coco_graduation = "IhiievWaZMI".parse()?;
     /// let metadata = client.video(&coco_graduation).await?;
     ///
     /// for song in &metadata.songs {
@@ -509,7 +509,7 @@ impl Client {
     /// let token = std::env::var("HOLODEX_API_TOKEN").unwrap();
     /// let client = holodex::Client::new(&token)?;
     ///
-    /// let ollie_birthday = "v6o7LBrQs-I".into();
+    /// let ollie_birthday = "v6o7LBrQs-I".parse()?;
     /// let metadata = client.video_with_timestamps(&ollie_birthday).await?;
     ///
     /// for comment in &metadata.comments {
@@ -545,7 +545,7 @@ impl Client {
     /// let token = std::env::var("HOLODEX_API_TOKEN").unwrap();
     /// let client = holodex::Client::new(&token)?;
     ///
-    /// let korone_birthday = "2l3i7MulCgs-I".into();
+    /// let korone_birthday = "2l3i7MulCgs-I".parse()?;
     /// let metadata = client.video_with_related(&korone_birthday, &[Language::English]).await?;
     ///
     /// for related in &metadata.related {
@@ -600,7 +600,7 @@ impl Client {
     ///
     /// let search = VideoSearchBuilder::new()
     ///     .order(SearchOrder::Newest)
-    ///     .channels(&["UCvaTdHTWBGv3MKj3KVqJVCw".into(), "UChAnqc_AY5_I3Px5dig3X1Q".into()])
+    ///     .channels(&["UCvaTdHTWBGv3MKj3KVqJVCw".parse()?, "UChAnqc_AY5_I3Px5dig3X1Q".parse()?])
     ///     .types(&[VideoType::Stream])
     ///     .limit(5)
     ///     .build();
