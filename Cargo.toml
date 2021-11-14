@@ -66,9 +66,6 @@ version = "0.2.9"
 features = ["serde"]
 optional = true
 
-[dependencies.strum]
-version = "0.22"
-features = ["derive"]
 
 [dependencies.thiserror]
 version = "1.0.30"

@@ -378,9 +378,8 @@ pub enum SearchOrder {
 }
 
 #[non_exhaustive]
-#[derive(Serialize, Debug, EnumDisplay, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Serialize, Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[serde(rename_all(serialize = "snake_case"))]
-#[strum(serialize_all = "snake_case")]
 /// What extra info to include in the response.
 pub enum ExtraVideoInfo {
     /// Any clips created from the video.
@@ -401,6 +400,22 @@ pub enum ExtraVideoInfo {
     ChannelStats,
     /// Any songs that were played in the video.
     Songs,
+}
+
+impl Display for ExtraVideoInfo {
+    fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
+        match *self {
+            ExtraVideoInfo::Clips => f.pad("clips"),
+            ExtraVideoInfo::Refers => f.pad("refers"),
+            ExtraVideoInfo::Sources => f.pad("sources"),
+            ExtraVideoInfo::Simulcasts => f.pad("simulcasts"),
+            ExtraVideoInfo::Mentions => f.pad("mentions"),
+            ExtraVideoInfo::Description => f.pad("description"),
+            ExtraVideoInfo::LiveInfo => f.pad("live_info"),
+            ExtraVideoInfo::ChannelStats => f.pad("channel_stats"),
+            ExtraVideoInfo::Songs => f.pad("songs"),
+        }
+    }
 }
 
 #[non_exhaustive]
@@ -439,9 +454,7 @@ pub enum Language {
     Other(String),
 }
 
-#[derive(
-    Serialize, Deserialize, EnumDisplay, Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash,
-)]
+#[derive(Serialize, Deserialize, Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 /// What order items should be returned in, ascending or descending.
 pub enum Order {
     #[serde(rename = "asc")]
@@ -450,6 +463,15 @@ pub enum Order {
     #[serde(rename = "desc")]
     /// Sort videos in descending order.
     Descending,
+}
+
+impl Display for Order {
+    fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
+        match *self {
+            Order::Ascending => f.pad("Ascending"),
+            Order::Descending => f.pad("Descending"),
+        }
+    }
 }
 
 #[non_exhaustive]
@@ -472,9 +494,7 @@ pub enum Organisation {
 }
 
 #[non_exhaustive]
-#[derive(
-    Serialize, Deserialize, EnumDisplay, Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash,
-)]
+#[derive(Serialize, Deserialize, Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[serde(rename_all = "snake_case")]
 /// Different criteria for sorting videos.
 pub enum VideoSortingCriteria {
@@ -515,10 +535,30 @@ pub enum VideoSortingCriteria {
     ChannelId,
 }
 
+impl Display for VideoSortingCriteria {
+    fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
+        match *self {
+            VideoSortingCriteria::Id => f.pad("Id"),
+            VideoSortingCriteria::Title => f.pad("Title"),
+            VideoSortingCriteria::Type => f.pad("Type"),
+            VideoSortingCriteria::Topics => f.pad("Topics"),
+            VideoSortingCriteria::PublishedAt => f.pad("PublishedAt"),
+            VideoSortingCriteria::AvailableAt => f.pad("AvailableAt"),
+            VideoSortingCriteria::Duration => f.pad("Duration"),
+            VideoSortingCriteria::Status => f.pad("Status"),
+            VideoSortingCriteria::StartScheduled => f.pad("StartScheduled"),
+            VideoSortingCriteria::StartActual => f.pad("StartActual"),
+            VideoSortingCriteria::EndActual => f.pad("EndActual"),
+            VideoSortingCriteria::LiveViewers => f.pad("LiveViewers"),
+            VideoSortingCriteria::Description => f.pad("Description"),
+            VideoSortingCriteria::SongCount => f.pad("SongCount"),
+            VideoSortingCriteria::ChannelId => f.pad("ChannelId"),
+        }
+    }
+}
+
 #[non_exhaustive]
-#[derive(
-    Serialize, Deserialize, EnumDisplay, Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash,
-)]
+#[derive(Serialize, Deserialize, Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[serde(rename_all = "snake_case")]
 /// Different criteria for sorting channels.
 pub enum ChannelSortingCriteria {
@@ -561,10 +601,32 @@ pub enum ChannelSortingCriteria {
     Description,
 }
 
+impl Display for ChannelSortingCriteria {
+    fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
+        match *self {
+            ChannelSortingCriteria::Id => f.pad("Id"),
+            ChannelSortingCriteria::Name => f.pad("Name"),
+            ChannelSortingCriteria::EnglishName => f.pad("EnglishName"),
+            ChannelSortingCriteria::Type => f.pad("Type"),
+            ChannelSortingCriteria::Organisation => f.pad("Organisation"),
+            ChannelSortingCriteria::SubOrganisation => f.pad("SubOrganisation"),
+            ChannelSortingCriteria::Photo => f.pad("Photo"),
+            ChannelSortingCriteria::Banner => f.pad("Banner"),
+            ChannelSortingCriteria::Twitter => f.pad("Twitter"),
+            ChannelSortingCriteria::VideoCount => f.pad("VideoCount"),
+            ChannelSortingCriteria::SubscriberCount => f.pad("SubscriberCount"),
+            ChannelSortingCriteria::ViewCount => f.pad("ViewCount"),
+            ChannelSortingCriteria::ClipCount => f.pad("ClipCount"),
+            ChannelSortingCriteria::Language => f.pad("Language"),
+            ChannelSortingCriteria::PublishedAt => f.pad("PublishedAt"),
+            ChannelSortingCriteria::Inactive => f.pad("Inactive"),
+            ChannelSortingCriteria::Description => f.pad("Description"),
+        }
+    }
+}
+
 #[non_exhaustive]
-#[derive(
-    Serialize, Deserialize, EnumDisplay, Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash,
-)]
+#[derive(Serialize, Deserialize, Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[serde(rename_all = "snake_case")]
 /// The type of the video.
 pub enum VideoType {
@@ -574,10 +636,17 @@ pub enum VideoType {
     Clip,
 }
 
+impl Display for VideoType {
+    fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
+        match *self {
+            VideoType::Stream => f.pad("Stream"),
+            VideoType::Clip => f.pad("Clip"),
+        }
+    }
+}
+
 #[non_exhaustive]
-#[derive(
-    Serialize, Deserialize, Debug, EnumDisplay, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash,
-)]
+#[derive(Serialize, Deserialize, Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[serde(rename_all = "snake_case")]
 /// The type of videos to fetch from a channel.
 pub enum ChannelVideoType {
@@ -589,13 +658,20 @@ pub enum ChannelVideoType {
     Collabs,
 }
 
+impl Display for ChannelVideoType {
+    fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
+        match *self {
+            ChannelVideoType::Clips => f.pad("Clips"),
+            ChannelVideoType::Videos => f.pad("Videos"),
+            ChannelVideoType::Collabs => f.pad("Collabs"),
+        }
+    }
+}
+
 #[non_exhaustive]
 #[allow(dead_code)]
-#[derive(
-    Serialize, Deserialize, Debug, Copy, Clone, EnumDisplay, PartialEq, Eq, PartialOrd, Ord, Hash,
-)]
+#[derive(Serialize, Deserialize, Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[serde(rename_all = "snake_case")]
-#[strum(serialize_all = "lowercase")]
 /// The status of the [`Video`].
 pub enum VideoStatus {
     /// The video hasn't been properly indexed yet.
@@ -608,6 +684,18 @@ pub enum VideoStatus {
     Past,
     /// The video used to exist, but is no longer available.
     Missing,
+}
+
+impl Display for VideoStatus {
+    fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
+        match *self {
+            VideoStatus::New => f.pad("new"),
+            VideoStatus::Upcoming => f.pad("upcoming"),
+            VideoStatus::Live => f.pad("live"),
+            VideoStatus::Past => f.pad("past"),
+            VideoStatus::Missing => f.pad("missing"),
+        }
+    }
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
