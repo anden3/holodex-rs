@@ -1,7 +1,7 @@
 [package]
 name = "holodex"
 version = "0.2.1"
-edition = "2018"
+edition = "2021"
 description = "A Rust wrapper of the Holodex v2 API."
 repository = "https://github.com/anden3/holodex-rs"
 license = "MIT OR Apache-2.0"
@@ -57,7 +57,8 @@ version = "1.0.59"
 
 [dependencies.serde_with]
 version = "1.10.0"
-features = ["macros", "chrono"]
+default-features = false
+features = ["chrono"]
 
 [dependencies.serde-enum-str]
 version = "0.2.4"

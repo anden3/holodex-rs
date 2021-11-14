@@ -9,31 +9,28 @@ use std::{fmt::Display, ops::Deref, string::ToString};
 use chrono::{DateTime, Duration, Utc};
 use itertools::Itertools;
 use serde::{self, Deserialize, Serialize};
-use serde_enum_str::{Deserialize_enum_str, Serialize_enum_str};
-use serde_with::{serde_as, CommaSeparator, DisplayFromStr, DurationSeconds, StringWithSeparator};
-use strum::Display as EnumDisplay;
+use serde_with::{CommaSeparator, DisplayFromStr, DurationSeconds};
 
 use crate::util::is_default;
 
 use self::id::{ChannelId, VideoId};
 
-#[serde_as]
 #[derive(Serialize, Debug, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
 /// Filtering criteria for the various video endpoints.
 pub struct VideoFilter {
     /// Only return videos from that channel.
     pub channel_id: Option<ChannelId>,
-    #[serde_as(as = "StringWithSeparator::<CommaSeparator, VideoId>")]
+    #[serde(with = "serde_with::rust::StringWithSeparator::<CommaSeparator>")]
     #[serde(skip_serializing_if = "Vec::is_empty")]
     /// Only return videos with any of these IDs.
     pub id: Vec<VideoId>,
     /// Only return videos from a specific organization.
     pub org: Option<Organisation>,
-    #[serde_as(as = "StringWithSeparator::<CommaSeparator, ExtraVideoInfo>")]
+    #[serde(with = "serde_with::rust::StringWithSeparator::<CommaSeparator>")]
     #[serde(skip_serializing_if = "Vec::is_empty")]
     /// Extra information to include with each video.
     pub include: Vec<ExtraVideoInfo>,
-    #[serde_as(as = "StringWithSeparator::<CommaSeparator, Language>")]
+    #[serde(with = "serde_with::rust::StringWithSeparator::<CommaSeparator>")]
     #[serde(skip_serializing_if = "Vec::is_empty")]
     /// If only videos of a specific [`Language`] should be returned.
     pub lang: Vec<Language>,
@@ -41,7 +38,7 @@ pub struct VideoFilter {
     pub max_upcoming_hours: u32,
     /// If only videos mentioning a specific channel should be returned.
     pub mentioned_channel_id: Option<ChannelId>,
-    #[serde_as(as = "StringWithSeparator::<CommaSeparator, VideoStatus>")]
+    #[serde(with = "serde_with::rust::StringWithSeparator::<CommaSeparator>")]
     #[serde(skip_serializing_if = "Vec::is_empty")]
     /// Which statuses the videos should have.
     pub status: Vec<VideoStatus>,
@@ -51,7 +48,7 @@ pub struct VideoFilter {
     /// The type of the videos.
     pub video_type: VideoType,
 
-    #[serde_as(as = "DisplayFromStr")]
+    #[serde(with = "serde_with::rust::display_fromstr")]
     #[serde(skip_serializing_if = "is_default")]
     /// If the results should be paginated.
     /// If so, the length of the results will limited to `limit`, with an offset of `offset`.
@@ -123,21 +120,20 @@ impl Display for VideoFilter {
     }
 }
 
-#[serde_as]
 #[derive(Serialize, Debug, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
 /// Filtering criteria for videos related to a channel.
 pub struct ChannelVideoFilter {
-    #[serde_as(as = "StringWithSeparator::<CommaSeparator, ExtraVideoInfo>")]
+    #[serde(with = "serde_with::rust::StringWithSeparator::<CommaSeparator>")]
     #[serde(skip_serializing_if = "Vec::is_empty")]
     /// Extra information to include with each video.
     pub include: Vec<ExtraVideoInfo>,
-    #[serde_as(as = "StringWithSeparator::<CommaSeparator, Language>")]
+    #[serde(with = "serde_with::rust::StringWithSeparator::<CommaSeparator>")]
     #[serde(rename = "lang")]
     #[serde(skip_serializing_if = "Vec::is_empty")]
     /// If only videos of a specific [`Language`] should be returned.
     pub languages: Vec<Language>,
 
-    #[serde_as(as = "DisplayFromStr")]
+    #[serde(with = "serde_with::rust::display_fromstr")]
     #[serde(skip_serializing_if = "is_default")]
     /// If the results should be paginated.
     /// If so, the length of the results will limited to `limit`, with an offset of `offset`.
@@ -183,7 +179,6 @@ impl Display for ChannelVideoFilter {
     }
 }
 
-#[serde_as]
 #[derive(Serialize, Debug, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
 /// Filtering criteria for channels.
 pub struct ChannelFilter {
@@ -226,7 +221,6 @@ impl Default for ChannelFilter {
     }
 }
 
-#[serde_as]
 #[derive(Serialize, Debug, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
 /// Filtering criteria for video searches.
 pub struct VideoSearch {
@@ -264,7 +258,7 @@ pub struct VideoSearch {
     /// or are clips from a channel in the organisation.
     pub organisations: Vec<Organisation>,
 
-    #[serde_as(as = "DisplayFromStr")]
+    #[serde(with = "serde_with::rust::display_fromstr")]
     #[serde(skip_serializing_if = "is_default")]
     /// If the results should be paginated.
     /// If so, the length of the results will limited to `limit`, with an offset of `offset`.
@@ -300,7 +294,6 @@ pub enum VideoSearchCondition {
     Text(String),
 }
 
-#[serde_as]
 #[derive(Serialize, Debug, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
 /// Filtering criteria for comment searches.
 pub struct CommentSearch {
@@ -339,7 +332,7 @@ pub struct CommentSearch {
     /// or that are clips from a channel in the organisation.
     pub organisations: Vec<Organisation>,
 
-    #[serde_as(as = "DisplayFromStr")]
+    #[serde(with = "serde_with::rust::display_fromstr")]
     #[serde(skip_serializing_if = "is_default")]
     /// If the results should be paginated.
     /// If so, the length of the results will limited to `limit`, with an offset of `offset`.
@@ -610,7 +603,6 @@ pub enum VideoStatus {
     Missing,
 }
 
-#[serde_as]
 #[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[serde(untagged)]
 /// Workaround for Holodex API returning [`PaginatedResult::total`] as either `String` or `u32`.
@@ -618,7 +610,7 @@ pub enum PaginatedTotal {
     /// The total returned as an `u32`.
     U32(u32),
     /// The total returned as a `String`, parsed into an `u32`.
-    String(#[serde_as(as = "DisplayFromStr")] u32),
+    String(#[serde(with = "serde_with::rust::display_fromstr")] u32),
 }
 
 impl From<PaginatedTotal> for u32 {
@@ -630,7 +622,6 @@ impl From<PaginatedTotal> for u32 {
     }
 }
 
-#[serde_as]
 #[derive(Deserialize, Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[serde(untagged)]
 /// A paginated result.
@@ -698,7 +689,6 @@ impl<T> From<PaginatedResult<T>> for Vec<T> {
     }
 }
 
-#[serde_as]
 #[derive(Deserialize, Debug, Clone, Eq, PartialOrd, Ord)]
 /// A video, that can be either a stream, premiere, or clip.
 pub struct Video {
@@ -722,7 +712,7 @@ pub struct Video {
     /// [`live_info.start_scheduled`][VideoLiveInfo::start_scheduled`], or
     /// [`published_at`](#structfield.published_at).
     pub available_at: DateTime<Utc>,
-    #[serde_as(as = "Option<DurationSeconds<i64>>")]
+    #[serde(with = "serde_with::As::<Option<DurationSeconds<i64>>>")]
     #[serde(default)]
     /// The length of the video in seconds.
     pub duration: Option<Duration>,
@@ -858,19 +848,18 @@ pub struct Channel {
     pub comments_crawled_at: Option<DateTime<Utc>>,
 }
 
-#[serde_as]
 #[derive(Deserialize, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 /// Various statistics about a channel.
 pub struct ChannelStats {
-    #[serde_as(as = "Option<DisplayFromStr>")]
+    #[serde(with = "serde_with::As::<Option<DisplayFromStr>>")]
     #[serde(default)]
     /// The amount of videos the channel has uploaded.
     pub video_count: Option<u32>,
-    #[serde_as(as = "Option<DisplayFromStr>")]
+    #[serde(with = "serde_with::As::<Option<DisplayFromStr>>")]
     #[serde(default)]
     /// The amount of subscribers the channel has.
     pub subscriber_count: Option<u32>,
-    #[serde_as(as = "Option<DisplayFromStr>")]
+    #[serde(with = "serde_with::As::<Option<DisplayFromStr>>")]
     #[serde(default)]
     /// The amount of views the channel has in total.
     pub view_count: Option<u32>,
@@ -988,7 +977,6 @@ impl Display for Comment {
     }
 }
 
-#[serde_as]
 #[derive(Deserialize, Serialize, Debug, Clone, Eq, PartialOrd, Ord)]
 /// A song that was played in a video.
 pub struct Song {
@@ -1004,10 +992,10 @@ pub struct Song {
     /// The ID of the song on iTunes, if available.
     pub itunes_id: Option<u64>,
 
-    #[serde_as(as = "DurationSeconds<i64>")]
+    #[serde(with = "serde_with::As::<DurationSeconds<i64>>")]
     /// When in the video the song started being played.
     pub start: Duration,
-    #[serde_as(as = "DurationSeconds<i64>")]
+    #[serde(with = "serde_with::As::<DurationSeconds<i64>>")]
     /// When in the video the song finished being played.
     pub end: Duration,
 }
