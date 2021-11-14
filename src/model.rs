@@ -7,7 +7,6 @@ pub mod id;
 use std::{fmt::Display, ops::Deref, string::ToString};
 
 use chrono::{DateTime, Duration, Utc};
-use itertools::Itertools;
 use serde::{self, Deserialize, Serialize};
 use serde_with::{CommaSeparator, DisplayFromStr, DurationSeconds};
 
@@ -102,10 +101,10 @@ impl Display for VideoFilter {
             "{} {{ channel_id: {}, id: {}, org: {}, include: {}, lang: {}, max_upcoming_hours: {}, mentioned_channel_id: {}, paginated: {}, limit: {}, offset: {}, sort_by: {}, order: {}, status: {}, topic: {}, video_type: {} }}",
             stringify!(VideoFilter),
             self.channel_id.as_ref().map_or("None", |id| &*id.0),
-            self.id.iter().map(ToString::to_string).join(", "),
+            self.id.iter().map(ToString::to_string).collect::<Vec<String>>().join(", "),
             self.org.as_ref().map_or("None".to_owned(), ToString::to_string),
-            self.include.iter().map(ToString::to_string).join(", "),
-            self.lang.iter().map(ToString::to_string).join(", "),
+            self.include.iter().map(ToString::to_string).collect::<Vec<String>>().join(", "),
+            self.lang.iter().map(ToString::to_string).collect::<Vec<String>>().join(", "),
             self.max_upcoming_hours,
             self.mentioned_channel_id.as_ref().map_or("None", |id| &*id.0),
             self.paginated,
@@ -113,7 +112,7 @@ impl Display for VideoFilter {
             self.offset,
             self.sort_by,
             self.order,
-            self.status.iter().map(ToString::to_string).join(", "),
+            self.status.iter().map(ToString::to_string).collect::<Vec<String>>().join(", "),
             self.topic.as_ref().map_or("None".to_owned(), ToString::to_string),
             self.video_type,
         )
@@ -170,8 +169,16 @@ impl Display for ChannelVideoFilter {
             f,
             "{} {{ include: {}, lang: {}, paginated: {}, limit: {}, offset: {} }}",
             stringify!(ChannelVideoFilter),
-            self.include.iter().map(ToString::to_string).join(", "),
-            self.languages.iter().map(ToString::to_string).join(", "),
+            self.include
+                .iter()
+                .map(ToString::to_string)
+                .collect::<Vec<String>>()
+                .join(", "),
+            self.languages
+                .iter()
+                .map(ToString::to_string)
+                .collect::<Vec<String>>()
+                .join(", "),
             self.paginated,
             self.limit,
             self.offset

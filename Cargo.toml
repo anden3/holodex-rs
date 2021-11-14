@@ -33,8 +33,6 @@ default-features = false
 features = ["std"]
 optional = true
 
-[dependencies.itertools]
-version = "0.10.1"
 
 [dependencies.miette]
 version = "3.1.0"
