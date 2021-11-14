@@ -1,6 +1,4 @@
 use itertools::Itertools;
-use reqwest::header;
-
 use crate::{
     errors::Error,
     model::{
@@ -17,7 +15,8 @@ use futures_core::Stream;
 #[derive(Debug, Clone)]
 /// The client used for interacting with the Holodex API.
 pub struct Client {
-    http: reqwest::Client,
+    http: ureq::Agent,
+    token: String,
 }
 
 impl Client {
@@ -31,16 +30,12 @@ impl Client {
     /// # Examples
     /// Create a client that gets the API token from an environment variable:
     /// ```rust
-    /// # fn main() -> Result<(), holodex::errors::Error> {
-    /// # tokio_test::block_on(async {
     /// # if std::env::var_os("HOLODEX_API_TOKEN").is_none() {
     /// #   std::env::set_var("HOLODEX_API_TOKEN", "my-api-token");
     /// # }
     /// let token = std::env::var("HOLODEX_API_TOKEN").unwrap();
     /// let client = holodex::Client::new(&token)?;
-    /// # Ok(())
-    /// # })
-    /// # }
+    /// # Ok::<(), holodex::errors::Error>(())
     /// ```
     ///
     /// # Errors
@@ -48,21 +43,12 @@ impl Client {
     ///
     /// Will return [`Error::HttpClientCreationError`] if a TLS backend cannot be initialized, or the resolver cannot load the system configuration.
     pub fn new(api_token: &str) -> Result<Self, Error> {
-        let mut headers = header::HeaderMap::new();
+        let http = ureq::builder().user_agent(Self::USER_AGENT).build();
 
-        let mut auth_value =
-            header::HeaderValue::from_str(api_token).map_err(|_e| Error::InvalidApiToken)?;
-
-        auth_value.set_sensitive(true);
-        headers.insert(header::HeaderName::from_static("x-apikey"), auth_value);
-
-        let http = reqwest::ClientBuilder::new()
-            .default_headers(headers)
-            .user_agent(Self::USER_AGENT)
-            .build()
-            .map_err(Error::HttpClientCreationError)?;
-
-        Ok(Self { http })
+        Ok(Self {
+            http,
+            token: api_token.to_owned(),
+        })
     }
 
     /// Query videos.
@@ -79,8 +65,6 @@ impl Client {
     /// Retrieve the five closest Japanese streams from independent streamers
     /// scheduled to go live within the next 24 hours, along with their descriptions.
     /// ```rust
-    /// # fn main() -> Result<(), holodex::errors::Error> {
-    /// # tokio_test::block_on(async {
     /// use holodex::model::{
     ///     builders::VideoFilterBuilder, ExtraVideoInfo, Language, Organisation,
     ///     VideoSortingCriteria, VideoType
@@ -102,23 +86,20 @@ impl Client {
     ///     .limit(5)
     ///     .build();
     ///
-    /// let results = client.videos(&filter).await?;
+    /// let results = client.videos(&filter)?;
     ///
     /// for stream in results {
     ///     println!("{}", stream.title);
     /// }
-    ///
-    /// # Ok(())
-    /// # })
-    /// # }
+    /// # Ok::<(), holodex::errors::Error>(())
     /// ```
     ///
     /// # Errors
     /// Will return [`Error::ApiRequestFailed`] if sending the API request fails.
     ///
     /// Will return [`Error::InvalidResponse`] if the API returned a faulty response or server error.
-    pub async fn videos(&self, parameters: &VideoFilter) -> Result<PaginatedResult<Video>, Error> {
-        Self::query_videos(&self.http, "/videos", parameters).await
+    pub fn videos(&self, parameters: &VideoFilter) -> Result<PaginatedResult<Video>, Error> {
+        Self::query_videos(&self.http, &self.token, "/videos", parameters)
     }
 
     #[cfg(feature = "streams")]
@@ -158,7 +139,7 @@ impl Client {
         &'a self,
         parameters: &'a VideoFilter,
     ) -> impl Stream<Item = Result<Video, Error>> + 'a {
-        Self::stream_endpoint(&self.http, "/videos", parameters)
+        Self::stream_endpoint(&self.http, &self.token, "/videos", parameters)
     }
 
     /// Query live and upcoming videos.
@@ -182,8 +163,6 @@ impl Client {
     ///
     /// Find live or upcoming streams from Hololive talents:
     /// ```rust
-    /// # fn main() -> Result<(), holodex::errors::Error> {
-    /// # tokio_test::block_on(async {
     /// use holodex::model::{Organisation, VideoFilter};
     ///
     /// # if std::env::var_os("HOLODEX_API_TOKEN").is_none() {
@@ -195,22 +174,20 @@ impl Client {
     ///     org: Some(Organisation::Hololive),
     ///     ..Default::default()
     /// };
-    /// let currently_live = client.live(&parameters).await?;
+    /// let currently_live = client.live(&parameters)?;
     ///
     /// for video in currently_live.items() {
     ///     println!("{}", video.title);
     /// }
-    /// # Ok(())
-    /// # })
-    /// # }
+    /// # Ok::<(), holodex::errors::Error>(())
     /// ```
     ///
     /// # Errors
     /// Will return [`Error::ApiRequestFailed`] if sending the API request fails.
     ///
     /// Will return [`Error::InvalidResponse`] if the API returned a faulty response or server error.
-    pub async fn live(&self, parameters: &VideoFilter) -> Result<PaginatedResult<Video>, Error> {
-        Self::query_videos(&self.http, "/live", parameters).await
+    pub fn live(&self, parameters: &VideoFilter) -> Result<PaginatedResult<Video>, Error> {
+        Self::query_videos(&self.http, &self.token, "/live", parameters)
     }
 
     /// Query videos related to channel.
@@ -223,8 +200,6 @@ impl Client {
     ///
     /// Find some English clips of Pekora:
     /// ```rust
-    /// # fn main() -> Result<(), holodex::errors::Error> {
-    /// # tokio_test::block_on(async {
     /// use holodex::model::{Language, ChannelVideoType, ChannelVideoFilter};
     ///
     /// # if std::env::var_os("HOLODEX_API_TOKEN").is_none() {
@@ -238,49 +213,51 @@ impl Client {
     ///     ..Default::default()
     /// };
     /// let pekora_ch_id = "UC1DCedRgGHBdm81E1llLhOQ".parse()?;
-    /// let english_clips = client.videos_from_channel(&pekora_ch_id, ChannelVideoType::Clips, &parameters)
-    ///     .await?;
+    /// let english_clips = client.videos_from_channel(&pekora_ch_id, ChannelVideoType::Clips, &parameters)?;
     ///
     /// for clip in english_clips.items() {
     ///     println!("{}", clip.title);
     /// }
-    /// # Ok(())
-    /// # })
-    /// # }
+    /// # Ok::<(), holodex::errors::Error>(())
     /// ```
     ///
     /// # Errors
     /// Will return [`Error::ApiRequestFailed`] if sending the API request fails.
     ///
     /// Will return [`Error::InvalidResponse`] if the API returned a faulty response or server error.
-    pub async fn videos_from_channel(
+    pub fn videos_from_channel(
         &self,
         channel_id: &ChannelId,
         video_type: ChannelVideoType,
         parameters: &ChannelVideoFilter,
     ) -> Result<PaginatedResult<Video>, Error> {
-        let res = self
+        let query_string = serde_urlencoded::to_string(parameters)
+            .map_err(|e| Error::FilterCreationError(e.to_string()))?;
+        let query_pairs: Vec<(&str, &str)> = serde_urlencoded::from_str(&query_string)
+            .map_err(|e| Error::FilterCreationError(e.to_string()))?;
+
+        let mut request = self
             .http
-            .get(format!(
+            .get(&format!(
                 "{}/channels/{}/{}",
                 Self::ENDPOINT,
                 channel_id,
                 video_type
             ))
-            .query(&parameters)
-            .send()
-            .await
-            .map_err(|e| Error::ApiRequestFailed {
-                endpoint: "/channels/{channel_id}/{type}",
-                source: e,
-            })?;
+            .set("x-apikey", &self.token);
 
-        let videos = validate_response(res)
-            .await
-            .map_err(|e| Error::InvalidResponse {
-                endpoint: "/channels/{channel_id}/{type}",
-                source: e,
-            })?;
+        for (key, value) in query_pairs {
+            request = request.query(key, value);
+        }
+        let res = request.call().map_err(|e| Error::ApiRequestFailed {
+            endpoint: "/channels/{channel_id}/{type}",
+            source: e,
+        })?;
+
+        let videos = validate_response(res).map_err(|e| Error::InvalidResponse {
+            endpoint: "/channels/{channel_id}/{type}",
+            source: e,
+        })?;
 
         Ok(videos)
     }
@@ -297,8 +274,6 @@ impl Client {
     ///
     /// Find if Amelia and/or Gura are live:
     /// ```rust
-    /// # fn main() -> Result<(), holodex::errors::Error> {
-    /// # tokio_test::block_on(async {
     /// # if std::env::var_os("HOLODEX_API_TOKEN").is_none() {
     /// #   std::env::set_var("HOLODEX_API_TOKEN", "my-api-token");
     /// # }
@@ -306,41 +281,43 @@ impl Client {
     /// let client = holodex::Client::new(&token)?;
     ///
     /// let channels = vec!["UCoSrY_IQQVpmIRZ9Xf-y93g".parse()?, "UCyl1z3jo3XHR1riLFKG5UAg".parse()?];
-    /// let streams = client.live_from_channels(&channels).await?;
+    /// let streams = client.live_from_channels(&channels)?;
     ///
     /// if !streams.is_empty() {
     ///     println!("At least one of the channels is live!");
     /// }
-    /// # Ok(())
-    /// # })
-    /// # }
+    /// # Ok::<(), holodex::errors::Error>(())
     /// ```
     ///
     /// # Errors
     /// Will return [`Error::ApiRequestFailed`] if sending the API request fails.
     ///
     /// Will return [`Error::InvalidResponse`] if the API returned a faulty response or server error.
-    pub async fn live_from_channels(
+    pub fn live_from_channels(
         &self,
         channel_ids: &[ChannelId],
     ) -> Result<PaginatedResult<Video>, Error> {
         let res = self
             .http
-            .get(format!("{}/users/live", Self::ENDPOINT))
-            .query(&[("channels", channel_ids.iter().map(|c| &*c.0).join(","))])
-            .send()
-            .await
+            .get(&format!("{}/users/live", Self::ENDPOINT))
+            .set("x-apikey", &self.token)
+            .query(
+                "channels",
+                &channel_ids
+                    .iter()
+                    .map(|c| &*c.0)
+                    .join(","),
+            )
+            .call()
             .map_err(|e| Error::ApiRequestFailed {
                 endpoint: "/users/live",
                 source: e,
             })?;
 
-        let videos = validate_response(res)
-            .await
-            .map_err(|e| Error::InvalidResponse {
-                endpoint: "/users/live",
-                source: e,
-            })?;
+        let videos = validate_response(res).map_err(|e| Error::InvalidResponse {
+            endpoint: "/users/live",
+            source: e,
+        })?;
 
         Ok(videos)
     }
@@ -351,8 +328,6 @@ impl Client {
     ///
     /// Find out how many subscribers Astel has.
     /// ```rust
-    /// # fn main() -> Result<(), holodex::errors::Error> {
-    /// # tokio_test::block_on(async {
     /// # if std::env::var_os("HOLODEX_API_TOKEN").is_none() {
     /// #   std::env::set_var("HOLODEX_API_TOKEN", "my-api-token");
     /// # }
@@ -360,37 +335,33 @@ impl Client {
     /// let client = holodex::Client::new(&token)?;
     ///
     /// let channel_id = "UCNVEsYbiZjH5QLmGeSgTSzg".parse()?;
-    /// let channel = client.channel(&channel_id).await?;
+    /// let channel = client.channel(&channel_id)?;
     ///
     /// if let Some(subs) = &channel.stats.subscriber_count {
     ///     println!("Astel has {} subscribers", subs);
     /// }
-    /// # Ok(())
-    /// # })
-    /// # }
+    /// # Ok::<(), holodex::errors::Error>(())
     /// ```
     ///
     /// # Errors
     /// Will return [`Error::ApiRequestFailed`] if sending the API request fails.
     ///
     /// Will return [`Error::InvalidResponse`] if the API returned a faulty response or server error.
-    pub async fn channel(&self, channel_id: &ChannelId) -> Result<Channel, Error> {
+    pub fn channel(&self, channel_id: &ChannelId) -> Result<Channel, Error> {
         let res = self
             .http
-            .get(format!("{}/channels/{}", Self::ENDPOINT, channel_id))
-            .send()
-            .await
+            .get(&format!("{}/channels/{}", Self::ENDPOINT, channel_id))
+            .set("x-apikey", &self.token)
+            .call()
             .map_err(|e| Error::ApiRequestFailed {
                 endpoint: "/channels/{channel_id}",
                 source: e,
             })?;
 
-        let channel = validate_response(res)
-            .await
-            .map_err(|e| Error::InvalidResponse {
-                endpoint: "/channels/{channel_id}",
-                source: e,
-            })?;
+        let channel = validate_response(res).map_err(|e| Error::InvalidResponse {
+            endpoint: "/channels/{channel_id}",
+            source: e,
+        })?;
 
         Ok(channel)
     }
@@ -401,8 +372,6 @@ impl Client {
     ///
     /// Print the top 10 vtuber channels by number of subscribers.
     /// ```rust
-    /// # fn main() -> Result<(), holodex::errors::Error> {
-    /// # tokio_test::block_on(async {
     /// use holodex::model::{
     ///     builders::ChannelFilterBuilder, ChannelFilter, ChannelSortingCriteria,
     ///     Order, Organisation
@@ -420,7 +389,7 @@ impl Client {
     ///     .limit(10)
     ///     .build()?;
     ///
-    /// let channels = client.channels(&filter).await?;
+    /// let channels = client.channels(&filter)?;
     ///
     /// for channel in channels {
     ///     println!(
@@ -428,33 +397,37 @@ impl Client {
     ///         channel.name, channel.stats.subscriber_count.unwrap_or_default()
     ///     );
     /// }
-    /// # Ok(())
-    /// # })
-    /// # }
+    /// # Ok::<(), holodex::errors::Error>(())
     /// ```
     ///
     /// # Errors
     /// Will return [`Error::ApiRequestFailed`] if sending the API request fails.
     ///
     /// Will return [`Error::InvalidResponse`] if the API returned a faulty response or server error.
-    pub async fn channels(&self, filter: &ChannelFilter) -> Result<Vec<Channel>, Error> {
-        let res = self
-            .http
-            .get(format!("{}/channels", Self::ENDPOINT))
-            .query(filter)
-            .send()
-            .await
-            .map_err(|e| Error::ApiRequestFailed {
-                endpoint: "/channels",
-                source: e,
-            })?;
+    pub fn channels(&self, filter: &ChannelFilter) -> Result<Vec<Channel>, Error> {
+        let query_string = serde_urlencoded::to_string(filter)
+            .map_err(|e| Error::FilterCreationError(e.to_string()))?;
+        let query_pairs: Vec<(&str, &str)> = serde_urlencoded::from_str(&query_string)
+            .map_err(|e| Error::FilterCreationError(e.to_string()))?;
 
-        let channels = validate_response(res)
-            .await
-            .map_err(|e| Error::InvalidResponse {
-                endpoint: "/channels",
-                source: e,
-            })?;
+        let mut request = self
+            .http
+            .get(&format!("{}/channels", Self::ENDPOINT))
+            .set("x-apikey", &self.token);
+
+        for (key, value) in query_pairs {
+            request = request.query(key, value);
+        }
+
+        let res = request.call().map_err(|e| Error::ApiRequestFailed {
+            endpoint: "/channels",
+            source: e,
+        })?;
+
+        let channels = validate_response(res).map_err(|e| Error::InvalidResponse {
+            endpoint: "/channels",
+            source: e,
+        })?;
 
         Ok(channels)
     }
@@ -465,8 +438,6 @@ impl Client {
     ///
     /// Find songs from Coco's graduation stream :(
     /// ```rust
-    /// # fn main() -> Result<(), holodex::errors::Error> {
-    /// # tokio_test::block_on(async {
     /// # if std::env::var_os("HOLODEX_API_TOKEN").is_none() {
     /// #   std::env::set_var("HOLODEX_API_TOKEN", "my-api-token");
     /// # }
@@ -474,23 +445,20 @@ impl Client {
     /// let client = holodex::Client::new(&token)?;
     ///
     /// let coco_graduation = "IhiievWaZMI".parse()?;
-    /// let metadata = client.video(&coco_graduation).await?;
+    /// let metadata = client.video(&coco_graduation)?;
     ///
     /// for song in &metadata.songs {
     ///     println!("{}", song);
     /// }
-    ///
-    /// # Ok(())
-    /// # })
-    /// # }
+    /// # Ok::<(), holodex::errors::Error>(())
     /// ```
     ///
     /// # Errors
     /// Will return [`Error::ApiRequestFailed`] if sending the API request fails.
     ///
     /// Will return [`Error::InvalidResponse`] if the API returned a faulty response or server error.
-    pub async fn video(&self, video_id: &VideoId) -> Result<VideoFull, Error> {
-        self.get_video::<()>(video_id, None).await
+    pub fn video(&self, video_id: &VideoId) -> Result<VideoFull, Error> {
+        self.get_video::<()>(video_id, None)
     }
 
     /// Get a single video's metadata, along with any indexed comments containing timestamps.
@@ -499,8 +467,6 @@ impl Client {
     ///
     /// Find all timestamps for Ollie's birthday stream (in 2021).
     /// ```rust
-    /// # fn main() -> Result<(), holodex::errors::Error> {
-    /// # tokio_test::block_on(async {
     /// # if std::env::var_os("HOLODEX_API_TOKEN").is_none() {
     /// #   std::env::set_var("HOLODEX_API_TOKEN", "my-api-token");
     /// # }
@@ -508,23 +474,20 @@ impl Client {
     /// let client = holodex::Client::new(&token)?;
     ///
     /// let ollie_birthday = "v6o7LBrQs-I".parse()?;
-    /// let metadata = client.video_with_timestamps(&ollie_birthday).await?;
+    /// let metadata = client.video_with_timestamps(&ollie_birthday)?;
     ///
     /// for comment in &metadata.comments {
     ///     println!("{}", comment);
     /// }
-    ///
-    /// # Ok(())
-    /// # })
-    /// # }
+    /// # Ok::<(), holodex::errors::Error>(())
     /// ```
     ///
     /// # Errors
     /// Will return [`Error::ApiRequestFailed`] if sending the API request fails.
     ///
     /// Will return [`Error::InvalidResponse`] if the API returned a faulty response or server error.
-    pub async fn video_with_timestamps(&self, video_id: &VideoId) -> Result<VideoFull, Error> {
-        self.get_video(video_id, Some(&[("c", "1")])).await
+    pub fn video_with_timestamps(&self, video_id: &VideoId) -> Result<VideoFull, Error> {
+        self.get_video(video_id, Some(&[("c", "1")]))
     }
 
     /// Get a single video's metadata, along with any recommended videos in languages matching the given filter.
@@ -533,8 +496,6 @@ impl Client {
     ///
     /// Get English videos related to Korone's birthday stream (2021).
     /// ```no_run
-    /// # fn main() -> Result<(), holodex::errors::Error> {
-    /// # tokio_test::block_on(async {
     /// use holodex::model::Language;
     ///
     /// # if std::env::var_os("HOLODEX_API_TOKEN").is_none() {
@@ -544,22 +505,19 @@ impl Client {
     /// let client = holodex::Client::new(&token)?;
     ///
     /// let korone_birthday = "2l3i7MulCgs-I".parse()?;
-    /// let metadata = client.video_with_related(&korone_birthday, &[Language::English]).await?;
+    /// let metadata = client.video_with_related(&korone_birthday, &[Language::English])?;
     ///
     /// for related in &metadata.related {
     ///     println!("{}", related.title);
     /// }
-    ///
-    /// # Ok(())
-    /// # })
-    /// # }
+    /// # Ok::<(), holodex::errors::Error>(())
     /// ```
     ///
     /// # Errors
     /// Will return [`Error::ApiRequestFailed`] if sending the API request fails.
     ///
     /// Will return [`Error::InvalidResponse`] if the API returned a faulty response or server error.
-    pub async fn video_with_related(
+    pub fn video_with_related(
         &self,
         video_id: &VideoId,
         related_language_filter: &[Language],
@@ -574,7 +532,6 @@ impl Client {
                     .join(","),
             )]),
         )
-        .await
     }
 
     /// Search for videos matching the given search conditions.
@@ -586,8 +543,6 @@ impl Client {
     ///
     /// Find the five latest Okayu/Korone collab streams.
     /// ```rust
-    /// # fn main() -> Result<(), holodex::errors::Error> {
-    /// # tokio_test::block_on(async {
     /// use holodex::model::{builders::VideoSearchBuilder, SearchOrder, VideoType};
     ///
     /// # if std::env::var_os("HOLODEX_API_TOKEN").is_none() {
@@ -603,42 +558,39 @@ impl Client {
     ///     .limit(5)
     ///     .build();
     ///
-    /// let results = client.search_videos(&search).await?;
+    /// let results = client.search_videos(&search)?;
     ///
     /// for result in results {
     ///     println!("{}", result.title);
     /// }
-    ///
-    /// # Ok(())
-    /// # })
-    /// # }
+    /// # Ok::<(), holodex::errors::Error>(())
     /// ```
     ///
     /// # Errors
     /// Will return [`Error::ApiRequestFailed`] if sending the API request fails.
     ///
     /// Will return [`Error::InvalidResponse`] if the API returned a faulty response or server error.
-    pub async fn search_videos(
+    pub fn search_videos(
         &self,
         search_parameters: &VideoSearch,
     ) -> Result<PaginatedResult<Video>, Error> {
         let res = self
             .http
-            .post(format!("{}/search/videoSearch", Self::ENDPOINT))
-            .json(search_parameters)
-            .send()
-            .await
+            .post(&format!("{}/search/videoSearch", Self::ENDPOINT))
+            .set("x-apikey", &self.token)
+            .send_json(
+                ureq::serde_to_value(search_parameters)
+                    .map_err(|e| Error::FilterCreationError(e.to_string()))?,
+            )
             .map_err(|e| Error::ApiRequestFailed {
                 endpoint: "/search/videoSearch",
                 source: e,
             })?;
 
-        let videos = validate_response(res)
-            .await
-            .map_err(|e| Error::InvalidResponse {
-                endpoint: "/search/videoSearch",
-                source: e,
-            })?;
+        let videos = validate_response(res).map_err(|e| Error::InvalidResponse {
+            endpoint: "/search/videoSearch",
+            source: e,
+        })?;
 
         Ok(videos)
     }
@@ -649,8 +601,6 @@ impl Client {
     ///
     /// Find the 50 oldest comments containing the word `peko` on streams from Nijisanji.
     /// ```rust
-    /// # fn main() -> Result<(), holodex::errors::Error> {
-    /// # tokio_test::block_on(async {
     /// use holodex::model::{builders::CommentSearchBuilder, Organisation, SearchOrder, VideoType};
     ///
     /// # if std::env::var_os("HOLODEX_API_TOKEN").is_none() {
@@ -666,96 +616,102 @@ impl Client {
     ///     .limit(50)
     ///     .build();
     ///
-    /// let videos_with_comments = client.search_comments(&search).await?;
+    /// let videos_with_comments = client.search_comments(&search)?;
     ///
     /// for comment in videos_with_comments.into_iter().flat_map(|v| v.comments) {
     ///     println!("{}", comment);
     /// }
-    ///
-    /// # Ok(())
-    /// # })
-    /// # }
+    /// # Ok::<(), holodex::errors::Error>(())
     /// ```
     ///
     /// # Errors
     /// Will return [`Error::ApiRequestFailed`] if sending the API request fails.
     ///
     /// Will return [`Error::InvalidResponse`] if the API returned a faulty response or server error.
-    pub async fn search_comments(
+    pub fn search_comments(
         &self,
         search_parameters: &CommentSearch,
     ) -> Result<PaginatedResult<VideoFull>, Error> {
         let res = self
             .http
-            .post(format!("{}/search/commentSearch", Self::ENDPOINT))
-            .json(search_parameters)
-            .send()
-            .await
+            .post(&format!("{}/search/commentSearch", Self::ENDPOINT))
+            .set("x-apikey", &self.token)
+            .send_json(
+                ureq::serde_to_value(search_parameters)
+                    .map_err(|e| Error::FilterCreationError(e.to_string()))?,
+            )
             .map_err(|e| Error::ApiRequestFailed {
                 endpoint: "/search/commentSearch",
                 source: e,
             })?;
 
-        let videos_with_comments =
-            validate_response(res)
-                .await
-                .map_err(|e| Error::InvalidResponse {
-                    endpoint: "/search/commentSearch",
-                    source: e,
-                })?;
+        let videos_with_comments = validate_response(res).map_err(|e| Error::InvalidResponse {
+            endpoint: "/search/commentSearch",
+            source: e,
+        })?;
 
         Ok(videos_with_comments)
     }
 
-    async fn get_video<T>(&self, video_id: &VideoId, query: Option<&T>) -> Result<VideoFull, Error>
+    fn get_video<T>(&self, video_id: &VideoId, query: Option<&T>) -> Result<VideoFull, Error>
     where
         T: serde::Serialize + Sync + Send + ?Sized + std::fmt::Debug,
     {
+        let query_string = serde_urlencoded::to_string(query)
+            .map_err(|e| Error::FilterCreationError(e.to_string()))?;
+        let query_pairs: Vec<(&str, &str)> = serde_urlencoded::from_str(&query_string)
+            .map_err(|e| Error::FilterCreationError(e.to_string()))?;
+
         let mut request = self
             .http
-            .get(format!("{}/videos/{}", Self::ENDPOINT, video_id));
+            .get(&format!("{}/videos/{}", Self::ENDPOINT, video_id))
+            .set("x-apikey", &self.token);
 
-        if let Some(query) = query {
-            request = request.query(query);
+        for (key, value) in query_pairs {
+            request = request.query(key, value);
         }
 
-        let res = request.send().await.map_err(|e| Error::ApiRequestFailed {
+        let res = request.call().map_err(|e| Error::ApiRequestFailed {
             endpoint: "/videos/{video_id}",
             source: e,
         })?;
 
-        let video = validate_response(res)
-            .await
-            .map_err(|e| Error::InvalidResponse {
-                endpoint: "/videos/{video_id}",
-                source: e,
-            })?;
+        let video = validate_response(res).map_err(|e| Error::InvalidResponse {
+            endpoint: "/videos/{video_id}",
+            source: e,
+        })?;
 
         Ok(video)
     }
 
-    #[fix_hidden_lifetime_bug]
-    async fn query_videos(
-        http: &reqwest::Client,
+    fn query_videos(
+        http: &ureq::Agent,
+        token: &str,
         endpoint: &'static str,
         parameters: &VideoFilter,
     ) -> Result<PaginatedResult<Video>, Error> {
-        let res = http
-            .get(format!("{}{}", Self::ENDPOINT, endpoint))
-            .query(&parameters)
-            .send()
-            .await
-            .map_err(|e| Error::ApiRequestFailed {
-                endpoint,
-                source: e,
-            })?;
+        let query_string = serde_urlencoded::to_string(parameters)
+            .map_err(|e| Error::FilterCreationError(e.to_string()))?;
+        let query_pairs: Vec<(&str, &str)> = serde_urlencoded::from_str(&query_string)
+            .map_err(|e| Error::FilterCreationError(e.to_string()))?;
 
-        let videos = validate_response(res)
-            .await
-            .map_err(|e| Error::InvalidResponse {
-                endpoint,
-                source: e,
-            })?;
+        let mut request = http
+            .get(&format!("{}{}", Self::ENDPOINT, endpoint))
+            .set("x-apikey", token);
+
+        for (key, value) in query_pairs {
+            request = request.query(key, value);
+        }
+
+        let res = request.call().map_err(|e| Error::ApiRequestFailed {
+            endpoint,
+            source: e,
+        })?;
+
+        let videos = validate_response(res).map_err(|e| Error::InvalidResponse {
+            endpoint,
+            source: e,
+        })?;
 
         Ok(videos)
     }
@@ -763,7 +719,8 @@ impl Client {
     #[cfg(feature = "streams")]
     #[allow(clippy::cast_possible_wrap, clippy::cast_possible_truncation)]
     fn stream_endpoint<'a>(
-        http: &'a reqwest::Client,
+        http: &'a ureq::Agent,
+        token: &'a str,
         endpoint: &'static str,
         parameters: &'a VideoFilter,
     ) -> impl Stream<Item = Result<Video, Error>> + 'a {

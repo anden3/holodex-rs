@@ -34,8 +34,6 @@ impl VideoId {
     ///
     /// Get all songs sung in the Lazu Light karaoke (2021-10-05).
     /// ```rust
-    /// # fn main() -> Result<(), holodex::errors::Error> {
-    /// # tokio_test::block_on(async {
     /// use holodex::model::{id::VideoId, Language};
     ///
     /// # if std::env::var_os("HOLODEX_API_TOKEN").is_none() {
@@ -45,22 +43,20 @@ impl VideoId {
     /// let client = holodex::Client::new(&token)?;
     ///
     /// let video_id: VideoId = "https://www.youtube.com/watch?v=V2SBDtZ4khY".parse()?;
-    /// let video = video_id.metadata(&client).await?;
+    /// let video = video_id.metadata(&client)?;
     ///
     /// for song in video.songs {
     ///     println!("{}", song);
     /// }
-    /// # Ok(())
-    /// # })
-    /// # }
+    /// # Ok::<(), holodex::errors::Error>(())
     /// ```
     ///
     /// # Errors
     /// Will return [`Error::ApiRequestFailed`] if sending the API request fails.
     ///
     /// Will return [`Error::InvalidResponse`] if the API returned a faulty response or server error.
-    pub async fn metadata(&self, client: &Client) -> Result<VideoFull, Error> {
-        client.video(self).await
+    pub fn metadata(&self, client: &Client) -> Result<VideoFull, Error> {
+        client.video(self)
     }
 
     /// Get all indexed comments containing timestamps for this video.
@@ -69,8 +65,6 @@ impl VideoId {
     ///
     /// Print all timestamped comments from Elira's birthday stream (2021).
     /// ```rust
-    /// # fn main() -> Result<(), holodex::errors::Error> {
-    /// # tokio_test::block_on(async {
     /// use holodex::model::id::VideoId;
     ///
     /// # if std::env::var_os("HOLODEX_API_TOKEN").is_none() {
@@ -80,25 +74,20 @@ impl VideoId {
     /// let client = holodex::Client::new(&token)?;
     ///
     /// let video: VideoId = "https://www.youtube.com/watch?v=tDXvkK_MLl0".parse()?;
-    /// let timestamps = video.timestamps(&client).await?;
+    /// let timestamps = video.timestamps(&client)?;
     ///
     /// for timestamp in timestamps {
     ///     println!("{}", timestamp);
     /// }
-    /// # Ok(())
-    /// # })
-    /// # }
+    /// # Ok::<(), holodex::errors::Error>(())
     /// ```
     ///
     /// # Errors
     /// Will return [`Error::ApiRequestFailed`] if sending the API request fails.
     ///
     /// Will return [`Error::InvalidResponse`] if the API returned a faulty response or server error.
-    pub async fn timestamps(
-        &self,
-        client: &Client,
-    ) -> Result<impl Iterator<Item = String> + '_, Error> {
-        let metadata = client.video_with_timestamps(self).await?;
+    pub fn timestamps(&self, client: &Client) -> Result<impl Iterator<Item = String> + '_, Error> {
+        let metadata = client.video_with_timestamps(self)?;
 
         Ok(metadata.comments.into_iter().map(|c| c.message))
     }
@@ -109,8 +98,6 @@ impl VideoId {
     ///
     /// Get Japanese clips related to Calli's birthday stream (2021).
     /// ```rust
-    /// # fn main() -> Result<(), holodex::errors::Error> {
-    /// # tokio_test::block_on(async {
     /// use holodex::model::{id::VideoId, Language};
     ///
     /// # if std::env::var_os("HOLODEX_API_TOKEN").is_none() {
@@ -120,26 +107,24 @@ impl VideoId {
     /// let client = holodex::Client::new(&token)?;
     ///
     /// let video: VideoId = "https://www.youtube.com/watch?v=NiziRRHFZGA".parse()?;
-    /// let clips = video.related(&client, &[Language::Japanese]).await?;
+    /// let clips = video.related(&client, &[Language::Japanese])?;
     ///
     /// for clip in clips {
     ///     println!("{}", clip.title);
     /// }
-    /// # Ok(())
-    /// # })
-    /// # }
+    /// # Ok::<(), holodex::errors::Error>(())
     /// ```
     ///
     /// # Errors
     /// Will return [`Error::ApiRequestFailed`] if sending the API request fails.
     ///
     /// Will return [`Error::InvalidResponse`] if the API returned a faulty response or server error.
-    pub async fn related(
+    pub fn related(
         &self,
         client: &Client,
         languages: &[Language],
     ) -> Result<impl Iterator<Item = Video> + '_, Error> {
-        let metadata = client.video_with_related(self, languages).await?;
+        let metadata = client.video_with_related(self, languages)?;
 
         Ok(metadata.related.into_iter())
     }
@@ -203,8 +188,6 @@ impl ChannelId {
     ///
     /// Show the top topics associated with Aruran's channel.
     /// ```rust
-    /// # fn main() -> Result<(), holodex::errors::Error> {
-    /// # tokio_test::block_on(async {
     /// use holodex::model::id::ChannelId;
     ///
     /// # if std::env::var_os("HOLODEX_API_TOKEN").is_none() {
@@ -214,22 +197,20 @@ impl ChannelId {
     /// let client = holodex::Client::new(&token)?;
     ///
     /// let channel_id: ChannelId = "UCKeAhJvy8zgXWbh9duVjIaQ".parse()?;
-    /// let channel = channel_id.metadata(&client).await?;
+    /// let channel = channel_id.metadata(&client)?;
     ///
     /// for topic in channel.top_topics {
     ///     println!("{}", topic);
     /// }
-    /// # Ok(())
-    /// # })
-    /// # }
+    /// # Ok::<(), holodex::errors::Error>(())
     /// ```
     ///
     /// # Errors
     /// Will return [`Error::ApiRequestFailed`] if sending the API request fails.
     ///
     /// Will return [`Error::InvalidResponse`] if the API returned a faulty response or server error.
-    pub async fn metadata(&self, client: &Client) -> Result<Channel, Error> {
-        client.channel(self).await
+    pub fn metadata(&self, client: &Client) -> Result<Channel, Error> {
+        client.channel(self)
     }
 
     /// Get videos that this channel has uploaded.
@@ -238,8 +219,6 @@ impl ChannelId {
     ///
     /// Print some videos uploaded by Kiara.
     /// ```rust
-    /// # fn main() -> Result<(), holodex::errors::Error> {
-    /// # tokio_test::block_on(async {
     /// use holodex::model::id::ChannelId;
     ///
     /// # if std::env::var_os("HOLODEX_API_TOKEN").is_none() {
@@ -249,31 +228,27 @@ impl ChannelId {
     /// let client = holodex::Client::new(&token)?;
     ///
     /// let channel_id: ChannelId = "UCHsx4Hqa-1ORjQTh9TYDhww".parse()?;
-    /// let videos = channel_id.videos(&client).await?;
+    /// let videos = channel_id.videos(&client)?;
     ///
     /// for video in videos {
     ///     println!("{}", video.title);
     /// }
-    /// # Ok(())
-    /// # })
-    /// # }
+    /// # Ok::<(), holodex::errors::Error>(())
     /// ```
     ///
     /// # Errors
     /// Will return [`Error::ApiRequestFailed`] if sending the API request fails.
     ///
     /// Will return [`Error::InvalidResponse`] if the API returned a faulty response or server error.
-    pub async fn videos(&self, client: &Client) -> Result<PaginatedResult<Video>, Error> {
-        client
-            .videos_from_channel(
-                self,
-                ChannelVideoType::Videos,
-                &ChannelVideoFilter {
-                    paginated: false,
-                    ..ChannelVideoFilter::default()
-                },
-            )
-            .await
+    pub fn videos(&self, client: &Client) -> Result<PaginatedResult<Video>, Error> {
+        client.videos_from_channel(
+            self,
+            ChannelVideoType::Videos,
+            &ChannelVideoFilter {
+                paginated: false,
+                ..ChannelVideoFilter::default()
+            },
+        )
     }
 
     #[cfg(feature = "streams")]
@@ -313,8 +288,6 @@ impl ChannelId {
     ///
     /// Show some clips related to Uto.
     /// ```rust
-    /// # fn main() -> Result<(), holodex::errors::Error> {
-    /// # tokio_test::block_on(async {
     /// use holodex::model::id::ChannelId;
     ///
     /// # if std::env::var_os("HOLODEX_API_TOKEN").is_none() {
@@ -324,31 +297,27 @@ impl ChannelId {
     /// let client = holodex::Client::new(&token)?;
     ///
     /// let channel_id: ChannelId = "UCdYR5Oyz8Q4g0ZmB4PkTD7g".parse()?;
-    /// let clips = channel_id.clips(&client).await?;
+    /// let clips = channel_id.clips(&client)?;
     ///
     /// for clip in clips {
     ///     println!("{}", clip.title);
     /// }
-    /// # Ok(())
-    /// # })
-    /// # }
+    /// # Ok::<(), holodex::errors::Error>(())
     /// ```
     ///
     /// # Errors
     /// Will return [`Error::ApiRequestFailed`] if sending the API request fails.
     ///
     /// Will return [`Error::InvalidResponse`] if the API returned a faulty response or server error.
-    pub async fn clips(&self, client: &Client) -> Result<PaginatedResult<Video>, Error> {
-        client
-            .videos_from_channel(
-                self,
-                ChannelVideoType::Clips,
-                &ChannelVideoFilter {
-                    paginated: false,
-                    ..ChannelVideoFilter::default()
-                },
-            )
-            .await
+    pub fn clips(&self, client: &Client) -> Result<PaginatedResult<Video>, Error> {
+        client.videos_from_channel(
+            self,
+            ChannelVideoType::Clips,
+            &ChannelVideoFilter {
+                paginated: false,
+                ..ChannelVideoFilter::default()
+            },
+        )
     }
 
     #[cfg(feature = "streams")]
@@ -388,8 +357,6 @@ impl ChannelId {
     ///
     /// Show some collabs with Korone.
     /// ```rust
-    /// # fn main() -> Result<(), holodex::errors::Error> {
-    /// # tokio_test::block_on(async {
     /// use holodex::model::id::ChannelId;
     ///
     /// # if std::env::var_os("HOLODEX_API_TOKEN").is_none() {
@@ -399,31 +366,27 @@ impl ChannelId {
     /// let client = holodex::Client::new(&token)?;
     ///
     /// let channel_id: ChannelId = "UChAnqc_AY5_I3Px5dig3X1Q".parse()?;
-    /// let collabs = channel_id.collabs(&client).await?;
+    /// let collabs = channel_id.collabs(&client)?;
     ///
     /// for collab in collabs {
     ///     println!("{}", collab.title);
     /// }
-    /// # Ok(())
-    /// # })
-    /// # }
+    /// # Ok::<(), holodex::errors::Error>(())
     /// ```
     ///
     /// # Errors
     /// Will return [`Error::ApiRequestFailed`] if sending the API request fails.
     ///
     /// Will return [`Error::InvalidResponse`] if the API returned a faulty response or server error.
-    pub async fn collabs(&self, client: &Client) -> Result<PaginatedResult<Video>, Error> {
-        client
-            .videos_from_channel(
-                self,
-                ChannelVideoType::Clips,
-                &ChannelVideoFilter {
-                    paginated: false,
-                    ..ChannelVideoFilter::default()
-                },
-            )
-            .await
+    pub fn collabs(&self, client: &Client) -> Result<PaginatedResult<Video>, Error> {
+        client.videos_from_channel(
+            self,
+            ChannelVideoType::Clips,
+            &ChannelVideoFilter {
+                paginated: false,
+                ..ChannelVideoFilter::default()
+            },
+        )
     }
 
     #[cfg(feature = "streams")]

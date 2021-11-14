@@ -88,6 +88,10 @@ quick_error! {
             display("Could not decode response: {}", err)
             source(err)
         }
+        /// The response from the API lacked a header.
+        MissingHeader(header: &'static str) {
+            display("Response lacked header: {}", header)
+        }
         /// The response from the API could not be parsed as JSON.
         ResponseJsonParseError(err: serde_json::Error, response: String) {
             display("Failed to parse response as JSON: {}\nResponse: {}", err, response)
