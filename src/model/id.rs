@@ -5,7 +5,6 @@ use std::{convert::TryFrom, fmt::Display, ops::Deref, str::FromStr};
 
 use regex::Regex;
 use serde::{self, Deserialize, Serialize};
-use tracing::error;
 
 use crate::{
     errors::Error,
@@ -481,7 +480,6 @@ impl ChannelId {
                 let (total, videos) = match client.videos_from_channel(&channel_id, video_type, &filter).await? {
                     PaginatedResult::Page { total, items } => (total, items),
                     PaginatedResult::Items(_) => {
-                        error!("Non-paginated result returned despite asking for paginated.");
                         break;
                     }
                 };

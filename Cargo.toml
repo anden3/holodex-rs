@@ -63,12 +63,9 @@ version = "0.2.9"
 features = ["serde"]
 optional = true
 
-
 [dependencies.thiserror]
 version = "1.0.30"
 
-[dependencies.tracing]
-version = "0.1.29"
 
 [features]
 default = ["streams", "sso"]
