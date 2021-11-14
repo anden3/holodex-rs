@@ -1,4 +1,3 @@
-use itertools::Itertools;
 use crate::{
     errors::Error,
     model::{
@@ -306,6 +305,7 @@ impl Client {
                 &channel_ids
                     .iter()
                     .map(|c| &*c.0)
+                    .collect::<Vec<&str>>()
                     .join(","),
             )
             .call()
@@ -529,6 +529,7 @@ impl Client {
                 related_language_filter
                     .iter()
                     .map(ToString::to_string)
+                    .collect::<Vec<String>>()
                     .join(","),
             )]),
         )
