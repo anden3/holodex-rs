@@ -495,7 +495,7 @@ impl Client {
     /// # Examples
     ///
     /// Get English videos related to Korone's birthday stream (2021).
-    /// ```no_run
+    /// ```rust
     /// use holodex::model::Language;
     ///
     /// # if std::env::var_os("HOLODEX_API_TOKEN").is_none() {
