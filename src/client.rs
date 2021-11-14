@@ -12,8 +12,6 @@ use crate::{
 };
 
 #[cfg(feature = "streams")]
-use async_stream::try_stream;
-#[cfg(feature = "streams")]
 use futures::Stream;
 
 #[derive(Debug, Clone)]
@@ -763,47 +761,48 @@ impl Client {
     }
 
     #[cfg(feature = "streams")]
-    #[allow(clippy::cast_possible_wrap)]
+    #[allow(clippy::cast_possible_wrap, clippy::cast_possible_truncation)]
     fn stream_endpoint<'a>(
         http: &'a reqwest::Client,
         endpoint: &'static str,
         parameters: &'a VideoFilter,
     ) -> impl Stream<Item = Result<Video, Error>> + 'a {
+        {
+            let (mut async_sender, async_receiver) = async_stream::yielder::pair();
 
-        try_stream! {
-            const CHUNK_SIZE: u32 = 50;
+            async_stream::AsyncStream::new(async_receiver, async move {
+                const CHUNK_SIZE: u32 = 50;
+                let mut filter = VideoFilter {
+                    paginated: true,
+                    limit: CHUNK_SIZE,
+                    offset: 0,
+                    ..parameters.clone()
+                };
+                let mut counter = 0_u32;
 
-            let mut filter = VideoFilter {
-                paginated: true,
-                limit: CHUNK_SIZE,
-                offset: 0,
-                ..parameters.clone()
-            };
-            let mut counter = 0_u32;
+                while let PaginatedResult::Page { total, items } =
+                    match Self::query_videos(http, token, endpoint, &filter) {
+                        Ok(v) => v,
+                        Err(e) => {
+                            async_sender.send(Err(e)).await;
+                            return;
+                        }
+                    }
+                {
+                    counter += items.len() as u32;
+                    let total: u32 = total.into();
 
+                    for video in items {
+                        async_sender.send(Ok(video)).await;
+                    }
 
-            loop {
-                let (total, videos) = match Self::query_videos(http, endpoint, &filter).await? {
-                    PaginatedResult::Page { total, items } => (total, items),
-                    PaginatedResult::Items(_) => {
+                    if counter >= total {
                         break;
                     }
-                };
 
-                counter += videos.len() as u32;
-                let total: u32 = total.into();
-
-
-                for video in videos {
-                    yield video;
+                    filter.offset += CHUNK_SIZE as i32;
                 }
-
-                if counter >= total {
-                    break;
-                }
-
-                filter.offset += CHUNK_SIZE as i32;
-            }
+            })
         }
     }
 }

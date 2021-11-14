@@ -15,8 +15,6 @@ use crate::{
 };
 
 #[cfg(feature = "streams")]
-use async_stream::try_stream;
-#[cfg(feature = "streams")]
 use futures::Stream;
 
 #[cfg(not(feature = "sso"))]
@@ -460,13 +458,15 @@ impl ChannelId {
     }
 
     #[cfg(feature = "streams")]
-    #[allow(clippy::cast_possible_wrap)]
+    #[allow(clippy::cast_possible_wrap, clippy::cast_possible_truncation)]
     fn stream_channel_video_type(
         client: &Client,
         channel_id: ChannelId,
         video_type: ChannelVideoType,
     ) -> impl Stream<Item = Result<Video, Error>> + '_ {
-        try_stream! {
+        let (mut async_sender, async_receiver) = async_stream::yielder::pair();
+
+        async_stream::AsyncStream::new(async_receiver, async move {
             const CHUNK_SIZE: u32 = 50;
 
             let mut filter = ChannelVideoFilter {
@@ -476,19 +476,20 @@ impl ChannelId {
             };
             let mut counter = 0_u32;
 
-            loop {
-                let (total, videos) = match client.videos_from_channel(&channel_id, video_type, &filter).await? {
-                    PaginatedResult::Page { total, items } => (total, items),
-                    PaginatedResult::Items(_) => {
-                        break;
+            while let PaginatedResult::Page { total, items } =
+                match client.videos_from_channel(&channel_id, video_type, &filter) {
+                    Ok(v) => v,
+                    Err(e) => {
+                        async_sender.send(Err(e)).await;
+                        return;
                     }
-                };
-
-                counter += videos.len() as u32;
+                }
+            {
+                counter += items.len() as u32;
                 let total: u32 = total.into();
 
-                for video in videos {
-                    yield video;
+                for video in items {
+                    async_sender.send(Ok(video)).await;
                 }
 
                 if counter >= total {
@@ -497,7 +498,7 @@ impl ChannelId {
 
                 filter.offset += CHUNK_SIZE as i32;
             }
-        }
+        })
     }
 }
 
