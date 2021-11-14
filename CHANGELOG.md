@@ -5,6 +5,53 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v0.3.0 (2021-11-14)
+
+### New Features
+
+ - <csr-id-632b886231907be4b6e9ed547e5b8e5d97eb96ba/> replace several `Into` impls with `From`
+
+### New Features (BREAKING)
+
+ - <csr-id-d8245fd04b89a6d50620a8c60516b2a616c88a9a/> replace `reqwest` with `ureq`
+   To bring down the dependency count and complexity, the HTTP client has
+   been replaced by a simpler sync one.
+ - <csr-id-fd2038851aebae1e36f126345161c6aa6a335c6c/> add sso feature and change id traits
+   Add an opt-out feature to store `VideoId` and `ChannelId` in a `smartstring` type.
+   Remove `From` impls for IDs, and impl `TryFrom` instead, to force the use of valid IDs.
+
+### Commit Statistics
+
+<csr-read-only-do-not-edit/>
+
+ - 15 commits contributed to the release over the course of 23 calendar days.
+ - 15 commits where understood as [conventional](https://www.conventionalcommits.org).
+ - 0 issues like '(#ID)' where seen in commit messages
+
+### Commit Details
+
+<csr-read-only-do-not-edit/>
+
+<details><summary>view details</summary>
+
+ * **Uncategorized**
+    - re-enable disabled test ([`4ff2966`](https://github.com/git///anden3/holodex-rs.git/commit/4ff2966fb5f8737c0e711c39f98f5fcee09ebad6))
+    - remove missed `itertools` usage ([`8dbcc1a`](https://github.com/git///anden3/holodex-rs.git/commit/8dbcc1ac9ff8d0aade35719e158c2b9659488576))
+    - remove unneeded `regex` perf feature ([`f3ff4a2`](https://github.com/git///anden3/holodex-rs.git/commit/f3ff4a2a71eb542a5dcb7cf3b806717faed676d0))
+    - replace `reqwest` with `ureq` ([`d8245fd`](https://github.com/git///anden3/holodex-rs.git/commit/d8245fd04b89a6d50620a8c60516b2a616c88a9a))
+    - replace `futures` with `futures-core` ([`264f199`](https://github.com/git///anden3/holodex-rs.git/commit/264f199754de5d8afa9be9fa5ff1801a39c12fe3))
+    - remove dependency on `async-stream` proc macros ([`d3ba2a4`](https://github.com/git///anden3/holodex-rs.git/commit/d3ba2a45fdcf4599673e6b919548a859aa6023da))
+    - replace `thiserror` and `miette` with `quick_error` ([`0689e30`](https://github.com/git///anden3/holodex-rs.git/commit/0689e30cc62bd2bd93a110f6a95e74ba9713bbbc))
+    - remove mostly unused `tracing` dependency ([`c0fc601`](https://github.com/git///anden3/holodex-rs.git/commit/c0fc601ce6a22214f71f6a52346b0c2bdac4748e))
+    - remove dependency on `serde-enum-str` ([`fab6091`](https://github.com/git///anden3/holodex-rs.git/commit/fab609114890d9ef5f0ea99531dcd3c65cc2abea))
+    - remove dependency on `strum` ([`f200104`](https://github.com/git///anden3/holodex-rs.git/commit/f2001047da9b4a89a721a2a133b6a7c349f10650))
+    - remove `itertools` dependency ([`cfe3878`](https://github.com/git///anden3/holodex-rs.git/commit/cfe38782cc3587ddbd3b2672e85d07939a8d0b22))
+    - remove dependency on `serde_with` proc-macros ([`c28ff91`](https://github.com/git///anden3/holodex-rs.git/commit/c28ff91d4ccceb9772f68013cf4965213277308f))
+    - add sso feature and change id traits ([`fd20388`](https://github.com/git///anden3/holodex-rs.git/commit/fd2038851aebae1e36f126345161c6aa6a335c6c))
+    - replace several `Into` impls with `From` ([`632b886`](https://github.com/git///anden3/holodex-rs.git/commit/632b886231907be4b6e9ed547e5b8e5d97eb96ba))
+    - add logging to `Client` streaming ([`8ea9341`](https://github.com/git///anden3/holodex-rs.git/commit/8ea93418cbd4b97c212ee37168ee9c880c761399))
+</details>
+
 ## v0.2.1 (2021-10-20)
 
 ### Bug Fixes
@@ -18,7 +65,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <csr-read-only-do-not-edit/>
 
- - 3 commits contributed to the release.
+ - 4 commits contributed to the release.
  - 3 commits where understood as [conventional](https://www.conventionalcommits.org).
  - 0 issues like '(#ID)' where seen in commit messages
 
@@ -29,6 +76,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 <details><summary>view details</summary>
 
  * **Uncategorized**
+    - Release holodex v0.2.1 ([`d90977f`](https://github.com/git///anden3/holodex-rs.git/commit/d90977f0abfb571575aaaf06b6ea1014f279f88b))
     - reduce redundant error messages ([`43c2687`](https://github.com/git///anden3/holodex-rs.git/commit/43c26872f693c4fe5ef8c59f2bc36055af949742))
     - default filter limit lowered ([`f261bae`](https://github.com/git///anden3/holodex-rs.git/commit/f261bae57c37ba6a19e4f8d35a4a63bd90519146))
     - fix compile error as crate ([`16cf9ae`](https://github.com/git///anden3/holodex-rs.git/commit/16cf9aeb38432b19abed33fd4caface212491c59))
