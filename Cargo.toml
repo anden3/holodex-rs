@@ -15,6 +15,10 @@ categories = ["api-bindings"]
 [dev-dependencies.tokio-test]
 version = "0.4.2"
 
+[dev-dependencies.futures]
+version = "0.3.17"
+default-features = false
+
 [dependencies.async-stream]
 version = "0.3.2"
 optional = true
@@ -27,10 +31,8 @@ features = ["std", "serde"]
 [dependencies.fix-hidden-lifetime-bug]
 version = "0.2.4"
 
-[dependencies.futures]
+[dependencies.futures-core]
 version = "0.3.17"
-default-features = false
-features = ["std"]
 optional = true
 
 [dependencies.quick-error]
@@ -66,5 +68,5 @@ optional = true
 
 [features]
 default = ["streams", "sso"]
-streams = ["async-stream", "futures"]
+streams = ["async-stream", "futures-core"]
 sso = ["smartstring"]

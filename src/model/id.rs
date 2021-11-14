@@ -15,7 +15,7 @@ use crate::{
 };
 
 #[cfg(feature = "streams")]
-use futures::Stream;
+use futures_core::Stream;
 
 #[cfg(not(feature = "sso"))]
 #[derive(Debug, Clone, PartialEq, Eq, Ord, PartialOrd, Hash, Serialize, Deserialize)]

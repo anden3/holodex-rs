@@ -12,7 +12,7 @@ use crate::{
 };
 
 #[cfg(feature = "streams")]
-use futures::Stream;
+use futures_core::Stream;
 
 #[derive(Debug, Clone)]
 /// The client used for interacting with the Holodex API.
