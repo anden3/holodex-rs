@@ -58,9 +58,6 @@ version = "1.10.0"
 default-features = false
 features = ["chrono"]
 
-[dependencies.serde-enum-str]
-version = "0.2.4"
-
 [dependencies.smartstring]
 version = "0.2.9"
 features = ["serde"]

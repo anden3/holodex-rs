@@ -4,7 +4,13 @@
 pub mod builders;
 pub mod id;
 
-use std::{fmt::Display, ops::Deref, string::ToString};
+mod serializers;
+
+use std::{
+    fmt::{self, Display},
+    ops::Deref,
+    string::ToString,
+};
 
 use chrono::{DateTime, Duration, Utc};
 use serde::{self, Deserialize, Serialize};
@@ -419,38 +425,27 @@ impl Display for ExtraVideoInfo {
 }
 
 #[non_exhaustive]
-#[derive(
-    Serialize_enum_str, Deserialize_enum_str, Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash,
-)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 /// What language to filter videos by.
 pub enum Language {
-    #[serde(rename = "all")]
     /// Include all languages.
     All,
-    #[serde(rename = "en")]
     /// Only English videos.
     English,
-    #[serde(rename = "es")]
     /// Only Spanish videos.
     Spanish,
-    #[serde(rename = "id")]
     /// Only Indonesian videos.
     Indonesian,
-    #[serde(rename = "ja")]
     /// Only Japanese videos.
     Japanese,
-    #[serde(rename = "ko")]
     /// Only Korean videos.
     Korean,
-    #[serde(rename = "ru")]
     /// Only Russian videos.
     Russian,
-    #[serde(rename = "zh")]
     /// Only Chinese videos.
     Chinese,
 
     /// Other language, please open a pull request to add support for it!
-    #[serde(other)]
     Other(String),
 }
 
@@ -476,10 +471,7 @@ impl Display for Order {
 
 #[non_exhaustive]
 #[allow(clippy::use_self)]
-#[derive(
-    Deserialize_enum_str, Serialize_enum_str, Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash,
-)]
-#[serde(rename_all = "PascalCase")]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 /// Which organization the VTuber(s) are a part of.
 pub enum Organisation {
     /// VTubers from [Hololive Production](https://en.hololive.tv/)
@@ -488,7 +480,6 @@ pub enum Organisation {
     Nijisanji,
     /// VTubers not part of any organization.
     Independents,
-    #[serde(other)]
     /// Organization not covered by other variants, please submit a pull request to add them!
     Other(String),
 }
