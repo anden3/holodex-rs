@@ -5,6 +5,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v0.3.1 (2021-11-15)
+
+### Bug Fixes
+
+ - <csr-id-869e91e8da6273d71d14891dcaae792c27d1c161/> queries with multiple parameters failed deserialization
+
+### Commit Statistics
+
+<csr-read-only-do-not-edit/>
+
+ - 1 commit contributed to the release.
+ - 1 commit where understood as [conventional](https://www.conventionalcommits.org).
+ - 0 issues like '(#ID)' where seen in commit messages
+
+### Commit Details
+
+<csr-read-only-do-not-edit/>
+
+<details><summary>view details</summary>
+
+ * **Uncategorized**
+    - queries with multiple parameters failed deserialization ([`869e91e`](https://github.com/git///anden3/holodex-rs.git/commit/869e91e8da6273d71d14891dcaae792c27d1c161))
+</details>
+
 ## v0.3.0 (2021-11-14)
 
 ### New Features
@@ -24,7 +48,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <csr-read-only-do-not-edit/>
 
- - 15 commits contributed to the release over the course of 23 calendar days.
+ - 16 commits contributed to the release over the course of 23 calendar days.
  - 15 commits where understood as [conventional](https://www.conventionalcommits.org).
  - 0 issues like '(#ID)' where seen in commit messages
 
@@ -35,6 +59,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 <details><summary>view details</summary>
 
  * **Uncategorized**
+    - Release holodex v0.3.0 ([`ec097fa`](https://github.com/git///anden3/holodex-rs.git/commit/ec097fa8e55f588b8f69c7c54e48397ba9988db6))
     - re-enable disabled test ([`4ff2966`](https://github.com/git///anden3/holodex-rs.git/commit/4ff2966fb5f8737c0e711c39f98f5fcee09ebad6))
     - remove missed `itertools` usage ([`8dbcc1a`](https://github.com/git///anden3/holodex-rs.git/commit/8dbcc1ac9ff8d0aade35719e158c2b9659488576))
     - remove unneeded `regex` perf feature ([`f3ff4a2`](https://github.com/git///anden3/holodex-rs.git/commit/f3ff4a2a71eb542a5dcb7cf3b806717faed676d0))
