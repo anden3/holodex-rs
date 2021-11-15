@@ -232,7 +232,7 @@ impl Client {
     ) -> Result<PaginatedResult<Video>, Error> {
         let query_string = serde_urlencoded::to_string(parameters)
             .map_err(|e| Error::FilterCreationError(e.to_string()))?;
-        let query_pairs: Vec<(&str, &str)> = serde_urlencoded::from_str(&query_string)
+        let query_pairs: Vec<(&str, String)> = serde_urlencoded::from_str(&query_string)
             .map_err(|e| Error::FilterCreationError(e.to_string()))?;
 
         let mut request = self
@@ -246,7 +246,7 @@ impl Client {
             .set("x-apikey", &self.token);
 
         for (key, value) in query_pairs {
-            request = request.query(key, value);
+            request = request.query(key, &value);
         }
         let res = request.call().map_err(|e| Error::ApiRequestFailed {
             endpoint: "/channels/{channel_id}/{type}",
@@ -407,7 +407,7 @@ impl Client {
     pub fn channels(&self, filter: &ChannelFilter) -> Result<Vec<Channel>, Error> {
         let query_string = serde_urlencoded::to_string(filter)
             .map_err(|e| Error::FilterCreationError(e.to_string()))?;
-        let query_pairs: Vec<(&str, &str)> = serde_urlencoded::from_str(&query_string)
+        let query_pairs: Vec<(&str, String)> = serde_urlencoded::from_str(&query_string)
             .map_err(|e| Error::FilterCreationError(e.to_string()))?;
 
         let mut request = self
@@ -416,7 +416,7 @@ impl Client {
             .set("x-apikey", &self.token);
 
         for (key, value) in query_pairs {
-            request = request.query(key, value);
+            request = request.query(key, &value);
         }
 
         let res = request.call().map_err(|e| Error::ApiRequestFailed {
@@ -660,7 +660,7 @@ impl Client {
     {
         let query_string = serde_urlencoded::to_string(query)
             .map_err(|e| Error::FilterCreationError(e.to_string()))?;
-        let query_pairs: Vec<(&str, &str)> = serde_urlencoded::from_str(&query_string)
+        let query_pairs: Vec<(&str, String)> = serde_urlencoded::from_str(&query_string)
             .map_err(|e| Error::FilterCreationError(e.to_string()))?;
 
         let mut request = self
@@ -669,7 +669,7 @@ impl Client {
             .set("x-apikey", &self.token);
 
         for (key, value) in query_pairs {
-            request = request.query(key, value);
+            request = request.query(key, &value);
         }
 
         let res = request.call().map_err(|e| Error::ApiRequestFailed {
@@ -693,7 +693,7 @@ impl Client {
     ) -> Result<PaginatedResult<Video>, Error> {
         let query_string = serde_urlencoded::to_string(parameters)
             .map_err(|e| Error::FilterCreationError(e.to_string()))?;
-        let query_pairs: Vec<(&str, &str)> = serde_urlencoded::from_str(&query_string)
+        let query_pairs: Vec<(&str, String)> = serde_urlencoded::from_str(&query_string)
             .map_err(|e| Error::FilterCreationError(e.to_string()))?;
 
         let mut request = http
@@ -701,7 +701,7 @@ impl Client {
             .set("x-apikey", token);
 
         for (key, value) in query_pairs {
-            request = request.query(key, value);
+            request = request.query(key, &value);
         }
 
         let res = request.call().map_err(|e| Error::ApiRequestFailed {
