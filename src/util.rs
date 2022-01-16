@@ -9,15 +9,16 @@ pub fn is_default<T: Default + PartialEq>(t: &T) -> bool {
 }
 
 fn into_bytes(response: ureq::Response) -> Result<Vec<u8>, ParseError> {
-    let len = response
+    let mut buffer = match response
         .header("Content-Length")
         .and_then(|s| s.parse::<usize>().ok())
-        .ok_or(ParseError::MissingHeader("Content-Length"))?;
+    {
+        Some(len) => Vec::with_capacity(len),
+        None => Vec::new(),
+    };
 
-    let mut bytes: Vec<u8> = Vec::with_capacity(len);
-
-    match response.into_reader().read_to_end(&mut bytes) {
-        Ok(_) => Ok(bytes),
+    match response.into_reader().read_to_end(&mut buffer) {
+        Ok(_) => Ok(buffer),
         Err(e) => Err(ParseError::ResponseDecodeError(e)),
     }
 }
@@ -37,7 +38,7 @@ where
         })
     } else {
         let bytes = into_bytes(response).map_err(ValidationError::ParseError)?;
-        validate_json_bytes(&bytes).map_err(|e| e.into())
+        validate_json_bytes(&bytes).map_err(std::convert::Into::into)
     }
 }
 
