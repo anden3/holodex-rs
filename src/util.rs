@@ -37,7 +37,7 @@ where
         })
     } else {
         let bytes = into_bytes(response).map_err(ValidationError::ParseError)?;
-        validate_json_bytes(&bytes).map_err(|e| e.into())
+        validate_json_bytes(&bytes).map_err(std::convert::Into::into)
     }
 }
 
