@@ -2,6 +2,7 @@
 
 use std::fmt::Display;
 
+use chrono::{DateTime, Utc};
 use serde::{self, Serialize};
 
 use crate::errors::Error;
@@ -150,6 +151,14 @@ impl VideoFilterBuilder {
     /// Only return videos with any of the given statuses.
     pub fn status(mut self, status: &[VideoStatus]) -> Self {
         self.filter.status = status.to_vec();
+        self
+    }
+
+    #[inline]
+    #[must_use]
+    /// Only return videos made available after the given time.
+    pub const fn after(mut self, after: DateTime<Utc>) -> Self {
+        self.filter.from = Some(after);
         self
     }
 

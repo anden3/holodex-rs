@@ -580,7 +580,7 @@ impl Client {
             .post(&format!("{}/search/videoSearch", Self::ENDPOINT))
             .set("x-apikey", &self.token)
             .send_json(
-                ureq::serde_to_value(search_parameters)
+                ureq::serde_json::to_value(search_parameters)
                     .map_err(|e| Error::FilterCreationError(e.to_string()))?,
             )
             .map_err(|e| Error::ApiRequestFailed {
@@ -638,7 +638,7 @@ impl Client {
             .post(&format!("{}/search/commentSearch", Self::ENDPOINT))
             .set("x-apikey", &self.token)
             .send_json(
-                ureq::serde_to_value(search_parameters)
+                ureq::serde_json::to_value(search_parameters)
                     .map_err(|e| Error::FilterCreationError(e.to_string()))?,
             )
             .map_err(|e| Error::ApiRequestFailed {

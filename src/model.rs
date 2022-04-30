@@ -53,6 +53,9 @@ pub struct VideoFilter {
     /// The type of the videos.
     pub video_type: VideoType,
 
+    /// Only include videos with `available_at` later than this time.
+    pub from: Option<DateTime<Utc>>,
+
     #[serde(with = "serde_with::rust::display_fromstr")]
     #[serde(skip_serializing_if = "is_default")]
     /// If the results should be paginated.
@@ -96,6 +99,7 @@ impl Default for VideoFilter {
             status: Vec::new(),
             topic: None,
             video_type: VideoType::Stream,
+            from: None,
         }
     }
 }
@@ -104,23 +108,65 @@ impl Display for VideoFilter {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "{} {{ channel_id: {}, id: {}, org: {}, include: {}, lang: {}, max_upcoming_hours: {}, mentioned_channel_id: {}, paginated: {}, limit: {}, offset: {}, sort_by: {}, order: {}, status: {}, topic: {}, video_type: {} }}",
+            "{} {{
+                channel_id: {},
+                id: {},
+                org: {},
+                include: {},
+                lang: {},
+                max_upcoming_hours: {},
+                mentioned_channel_id: {},
+                paginated: {},
+                limit: {},
+                offset: {},
+                sort_by: {},
+                order: {},
+                status: {},
+                topic: {},
+                video_type: {},
+                from: {},
+             }}",
             stringify!(VideoFilter),
             self.channel_id.as_ref().map_or("None", |id| &*id.0),
-            self.id.iter().map(ToString::to_string).collect::<Vec<String>>().join(", "),
-            self.org.as_ref().map_or("None".to_owned(), ToString::to_string),
-            self.include.iter().map(ToString::to_string).collect::<Vec<String>>().join(", "),
-            self.lang.iter().map(ToString::to_string).collect::<Vec<String>>().join(", "),
+            self.id
+                .iter()
+                .map(ToString::to_string)
+                .collect::<Vec<String>>()
+                .join(", "),
+            self.org
+                .as_ref()
+                .map_or("None".to_owned(), ToString::to_string),
+            self.include
+                .iter()
+                .map(ToString::to_string)
+                .collect::<Vec<String>>()
+                .join(", "),
+            self.lang
+                .iter()
+                .map(ToString::to_string)
+                .collect::<Vec<String>>()
+                .join(", "),
             self.max_upcoming_hours,
-            self.mentioned_channel_id.as_ref().map_or("None", |id| &*id.0),
+            self.mentioned_channel_id
+                .as_ref()
+                .map_or("None", |id| &*id.0),
             self.paginated,
             self.limit,
             self.offset,
             self.sort_by,
             self.order,
-            self.status.iter().map(ToString::to_string).collect::<Vec<String>>().join(", "),
-            self.topic.as_ref().map_or("None".to_owned(), ToString::to_string),
+            self.status
+                .iter()
+                .map(ToString::to_string)
+                .collect::<Vec<String>>()
+                .join(", "),
+            self.topic
+                .as_ref()
+                .map_or("None".to_owned(), ToString::to_string),
             self.video_type,
+            self.from
+                .as_ref()
+                .map_or("None".to_owned(), ToString::to_string),
         )
     }
 }
