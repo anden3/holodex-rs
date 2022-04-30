@@ -53,8 +53,9 @@ pub struct VideoFilter {
     /// The type of the videos.
     pub video_type: VideoType,
 
-    /// Only include videos with `available_at` later than this time.
-    pub from: Option<DateTime<Utc>>,
+    #[serde(rename = "from")]
+    /// Only include videos with `available_at` set later than this time.
+    pub after: Option<DateTime<Utc>>,
 
     #[serde(with = "serde_with::rust::display_fromstr")]
     #[serde(skip_serializing_if = "is_default")]
@@ -99,7 +100,7 @@ impl Default for VideoFilter {
             status: Vec::new(),
             topic: None,
             video_type: VideoType::Stream,
-            from: None,
+            after: None,
         }
     }
 }
@@ -124,7 +125,7 @@ impl Display for VideoFilter {
                 status: {},
                 topic: {},
                 video_type: {},
-                from: {},
+                after: {},
              }}",
             stringify!(VideoFilter),
             self.channel_id.as_ref().map_or("None", |id| &*id.0),
@@ -164,7 +165,7 @@ impl Display for VideoFilter {
                 .as_ref()
                 .map_or("None".to_owned(), ToString::to_string),
             self.video_type,
-            self.from
+            self.after
                 .as_ref()
                 .map_or("None".to_owned(), ToString::to_string),
         )

@@ -158,7 +158,7 @@ impl VideoFilterBuilder {
     #[must_use]
     /// Only return videos made available after the given time.
     pub const fn after(mut self, after: DateTime<Utc>) -> Self {
-        self.filter.from = Some(after);
+        self.filter.after = Some(after);
         self
     }
 
