@@ -828,6 +828,7 @@ pub struct Video {
     /// The ID of the video.
     pub id: VideoId,
     /// The title of the video.
+    #[serde(default)]
     pub title: String,
     #[serde(rename = "type")]
     /// The type of the video.
