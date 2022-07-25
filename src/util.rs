@@ -9,12 +9,16 @@ pub fn is_default<T: Default + PartialEq>(t: &T) -> bool {
 }
 
 fn into_bytes(response: ureq::Response) -> Result<Vec<u8>, ParseError> {
-    let len = response
+    let mut bytes = if response.has("Content-Length") {
+        let len = response
         .header("Content-Length")
         .and_then(|s| s.parse::<usize>().ok())
         .ok_or(ParseError::MissingHeader("Content-Length"))?;
 
-    let mut bytes: Vec<u8> = Vec::with_capacity(len);
+        Vec::with_capacity(len)
+    } else {
+        vec![]
+    };
 
     match response.into_reader().read_to_end(&mut bytes) {
         Ok(_) => Ok(bytes),
