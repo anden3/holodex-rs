@@ -427,9 +427,7 @@ impl ChannelId {
         channel_id: ChannelId,
         video_type: ChannelVideoType,
     ) -> impl Stream<Item = Result<Video, Error>> + '_ {
-        let (mut async_sender, async_receiver) = async_stream::yielder::pair();
-
-        async_stream::AsyncStream::new(async_receiver, async move {
+        async_stream::try_stream! {
             const CHUNK_SIZE: u32 = 50;
 
             let mut filter = ChannelVideoFilter {
@@ -440,19 +438,13 @@ impl ChannelId {
             let mut counter = 0_u32;
 
             while let PaginatedResult::Page { total, items } =
-                match client.videos_from_channel(&channel_id, video_type, &filter) {
-                    Ok(v) => v,
-                    Err(e) => {
-                        async_sender.send(Err(e)).await;
-                        return;
-                    }
-                }
+                client.videos_from_channel(&channel_id, video_type, &filter)?
             {
                 counter += items.len() as u32;
                 let total: u32 = total.into();
 
                 for video in items {
-                    async_sender.send(Ok(video)).await;
+                    yield video;
                 }
 
                 if counter >= total {
@@ -461,7 +453,7 @@ impl ChannelId {
 
                 filter.offset += CHUNK_SIZE as i32;
             }
-        })
+        }
     }
 }
 
