@@ -16,36 +16,36 @@ categories = ["api-bindings"]
 version = "0.4.2"
 
 [dev-dependencies.futures]
-version = "0.3.17"
+version = "0.3.28"
 default-features = false
 
 [dependencies.async-stream]
-version = "0.3.2"
+version = "0.3.5"
 optional = true
 
 [dependencies.chrono]
-version = "0.4.19"
+version = "0.4.26"
 default_features = false
 features = ["std", "serde"]
 
 [dependencies.futures-core]
-version = "0.3.17"
+version = "0.3.29"
 optional = true
 
 [dependencies.quick-error]
 version = "2.0.1"
 
 [dependencies.regex]
-version = "1.5.4"
+version = "1.9.1"
 default-features = false
 features = ["std"]
 
 [dependencies.serde]
-version = "1.0.130"
+version = "1.0.191"
 features = ["derive"]
 
 [dependencies.serde_json]
-version = "1.0.59"
+version = "1.0.108"
 
 [dependencies.serde_with]
 version = "1.10.0"
@@ -53,15 +53,15 @@ default-features = false
 features = ["chrono"]
 
 [dependencies.serde_urlencoded]
-version = "0.7.0"
+version = "0.7.1"
 
 [dependencies.smartstring]
-version = "0.2.9"
+version = "1.0.1"
 features = ["serde"]
 optional = true
 
 [dependencies.ureq]
-version = "2.3.0"
+version = "2.7.1"
 features = ["json"]
 
 
