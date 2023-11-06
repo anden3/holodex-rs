@@ -14,7 +14,7 @@ use std::{
 
 use chrono::{DateTime, Duration, Utc};
 use serde::{self, Deserialize, Serialize};
-use serde_with::{CommaSeparator, DisplayFromStr, DurationSeconds};
+use serde_with::{As, formats::CommaSeparator, DisplayFromStr, DurationSeconds, StringWithSeparator};
 
 use crate::util::is_default;
 
@@ -25,17 +25,17 @@ use self::id::{ChannelId, VideoId};
 pub struct VideoFilter {
     /// Only return videos from that channel.
     pub channel_id: Option<ChannelId>,
-    #[serde(with = "serde_with::rust::StringWithSeparator::<CommaSeparator>")]
+    #[serde(with = "As::<StringWithSeparator::<CommaSeparator, _>>")]
     #[serde(skip_serializing_if = "Vec::is_empty")]
     /// Only return videos with any of these IDs.
     pub id: Vec<VideoId>,
     /// Only return videos from a specific organization.
     pub org: Option<Organisation>,
-    #[serde(with = "serde_with::rust::StringWithSeparator::<CommaSeparator>")]
+    #[serde(with = "As::<StringWithSeparator::<CommaSeparator, _>>")]
     #[serde(skip_serializing_if = "Vec::is_empty")]
     /// Extra information to include with each video.
     pub include: Vec<ExtraVideoInfo>,
-    #[serde(with = "serde_with::rust::StringWithSeparator::<CommaSeparator>")]
+    #[serde(with = "As::<StringWithSeparator::<CommaSeparator, _>>")]
     #[serde(skip_serializing_if = "Vec::is_empty")]
     /// If only videos of a specific [`Language`] should be returned.
     pub lang: Vec<Language>,
@@ -43,7 +43,7 @@ pub struct VideoFilter {
     pub max_upcoming_hours: u32,
     /// If only videos mentioning a specific channel should be returned.
     pub mentioned_channel_id: Option<ChannelId>,
-    #[serde(with = "serde_with::rust::StringWithSeparator::<CommaSeparator>")]
+    #[serde(with = "As::<StringWithSeparator::<CommaSeparator, _>>")]
     #[serde(skip_serializing_if = "Vec::is_empty")]
     /// Which statuses the videos should have.
     pub status: Vec<VideoStatus>,
@@ -56,7 +56,7 @@ pub struct VideoFilter {
     /// Only include videos with `available_at` later than this time.
     pub from: Option<DateTime<Utc>>,
 
-    #[serde(with = "serde_with::rust::display_fromstr")]
+    #[serde(with = "As::<DisplayFromStr>")]
     #[serde(skip_serializing_if = "is_default")]
     /// If the results should be paginated.
     /// If so, the length of the results will limited to `limit`, with an offset of `offset`.
@@ -174,17 +174,17 @@ impl Display for VideoFilter {
 #[derive(Serialize, Debug, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
 /// Filtering criteria for videos related to a channel.
 pub struct ChannelVideoFilter {
-    #[serde(with = "serde_with::rust::StringWithSeparator::<CommaSeparator>")]
+    #[serde(with = "As::<StringWithSeparator::<CommaSeparator, _>>")]
     #[serde(skip_serializing_if = "Vec::is_empty")]
     /// Extra information to include with each video.
     pub include: Vec<ExtraVideoInfo>,
-    #[serde(with = "serde_with::rust::StringWithSeparator::<CommaSeparator>")]
+    #[serde(with = "As::<StringWithSeparator::<CommaSeparator, _>>")]
     #[serde(rename = "lang")]
     #[serde(skip_serializing_if = "Vec::is_empty")]
     /// If only videos of a specific [`Language`] should be returned.
     pub languages: Vec<Language>,
 
-    #[serde(with = "serde_with::rust::display_fromstr")]
+    #[serde(with = "As::<DisplayFromStr>")]
     #[serde(skip_serializing_if = "is_default")]
     /// If the results should be paginated.
     /// If so, the length of the results will limited to `limit`, with an offset of `offset`.
@@ -317,7 +317,7 @@ pub struct VideoSearch {
     /// or are clips from a channel in the organisation.
     pub organisations: Vec<Organisation>,
 
-    #[serde(with = "serde_with::rust::display_fromstr")]
+    #[serde(with = "As::<DisplayFromStr>")]
     #[serde(skip_serializing_if = "is_default")]
     /// If the results should be paginated.
     /// If so, the length of the results will limited to `limit`, with an offset of `offset`.
@@ -391,7 +391,7 @@ pub struct CommentSearch {
     /// or that are clips from a channel in the organisation.
     pub organisations: Vec<Organisation>,
 
-    #[serde(with = "serde_with::rust::display_fromstr")]
+    #[serde(with = "As::<DisplayFromStr>")]
     #[serde(skip_serializing_if = "is_default")]
     /// If the results should be paginated.
     /// If so, the length of the results will limited to `limit`, with an offset of `offset`.
@@ -742,7 +742,7 @@ pub enum PaginatedTotal {
     /// The total returned as an `u32`.
     U32(u32),
     /// The total returned as a `String`, parsed into an `u32`.
-    String(#[serde(with = "serde_with::rust::display_fromstr")] u32),
+    String(#[serde(with = "serde_with::As::<serde_with::DisplayFromStr>")] u32),
 }
 
 impl From<PaginatedTotal> for u32 {

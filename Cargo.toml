@@ -48,9 +48,9 @@ features = ["derive"]
 version = "1.0.108"
 
 [dependencies.serde_with]
-version = "1.10.0"
+version = "3.4.0"
 default-features = false
-features = ["chrono"]
+features = ["chrono_0_4"]
 
 [dependencies.serde_urlencoded]
 version = "0.7.1"
