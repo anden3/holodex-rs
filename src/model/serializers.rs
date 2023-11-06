@@ -55,7 +55,7 @@ impl Display for Language {
         use serde::Serialize as _;
 
         match *self {
-            Self::Other(ref s) => write!(f, "{}", s),
+            Self::Other(ref s) => write!(f, "{s}"),
             _ => self.serialize(f),
         }
     }
@@ -153,7 +153,7 @@ impl<'de> Deserialize<'de> for Organisation {
             Other(String),
         }
 
-        let value = match <OrgDeUntagged as serde::Deserialize>::deserialize(deserializer)? {
+        let value = match OrgDeUntagged::deserialize(deserializer)? {
             OrgDeUntagged::Enum(e) => match e {
                 OrgDe::Hololive => Organisation::Hololive,
                 OrgDe::Nijisanji => Organisation::Nijisanji,
@@ -213,7 +213,7 @@ impl Display for Organisation {
     #[allow(clippy::wildcard_enum_match_arm)]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match *self {
-            Self::Other(ref s) => write!(f, "{}", s),
+            Self::Other(ref s) => write!(f, "{s}"),
             _ => self.serialize(f),
         }
     }
