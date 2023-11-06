@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## v0.3.2 (2023-11-06)
 
+<csr-id-f3f575a61d23e06a9e200b96e290e135f7fd8d51/>
+<csr-id-44a51a26d49032f9c553e86a6647623c2a5b0838/>
+<csr-id-c87a47725c91b0787c89ef8c7b5630de6ba832b5/>
+<csr-id-063545db6fb528f749f23bddf5f35a508400625b/>
+<csr-id-6cf6ad798067d72f55f643487ea44e026a6bd78e/>
+
 ### Chore
 
  - <csr-id-f3f575a61d23e06a9e200b96e290e135f7fd8d51/> update cargo_with
@@ -37,8 +43,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <csr-read-only-do-not-edit/>
 
- - 8 commits contributed to the release over the course of 555 calendar days.
- - 720 days passed between releases.
+ - 9 commits contributed to the release over the course of 555 calendar days.
+ - 721 days passed between releases.
  - 8 commits were understood as [conventional](https://www.conventionalcommits.org).
  - 0 issues like '(#ID)' were seen in commit messages
 
@@ -49,6 +55,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 <details><summary>view details</summary>
 
  * **Uncategorized**
+    - Release holodex v0.3.2 ([`412acb2`](https://github.com/anden3/holodex-rs/commit/412acb21a8817d7fe0cbab988661f70d7e19ea0e))
     - Add cargo-deny config ([`140eaed`](https://github.com/anden3/holodex-rs/commit/140eaeda09fc75396c8fe81d8facc9acfb2204f1))
     - Update cargo_with ([`f3f575a`](https://github.com/anden3/holodex-rs/commit/f3f575a61d23e06a9e200b96e290e135f7fd8d51))
     - Update dependencies ([`44a51a2`](https://github.com/anden3/holodex-rs/commit/44a51a26d49032f9c553e86a6647623c2a5b0838))
@@ -86,6 +93,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 </details>
 
 ## v0.3.0 (2021-11-14)
+
+<csr-id-8dbcc1ac9ff8d0aade35719e158c2b9659488576/>
+<csr-id-f3ff4a2a71eb542a5dcb7cf3b806717faed676d0/>
+<csr-id-264f199754de5d8afa9be9fa5ff1801a39c12fe3/>
+<csr-id-d3ba2a45fdcf4599673e6b919548a859aa6023da/>
+<csr-id-0689e30cc62bd2bd93a110f6a95e74ba9713bbbc/>
+<csr-id-c0fc601ce6a22214f71f6a52346b0c2bdac4748e/>
+<csr-id-fab609114890d9ef5f0ea99531dcd3c65cc2abea/>
+<csr-id-f2001047da9b4a89a721a2a133b6a7c349f10650/>
+<csr-id-cfe38782cc3587ddbd3b2672e85d07939a8d0b22/>
+<csr-id-c28ff91d4ccceb9772f68013cf4965213277308f/>
+<csr-id-4ff2966fb5f8737c0e711c39f98f5fcee09ebad6/>
+<csr-id-8ea93418cbd4b97c212ee37168ee9c880c761399/>
 
 ### Refactor
 
@@ -155,6 +175,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## v0.2.1 (2021-10-20)
 
+<csr-id-43c26872f693c4fe5ef8c59f2bc36055af949742/>
+
 ### Other
 
  - <csr-id-43c26872f693c4fe5ef8c59f2bc36055af949742/> reduce redundant error messages
@@ -188,6 +210,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 </details>
 
 ## v0.2.0 (2021-10-19)
+
+<csr-id-1f09ff259749fe3253a9f137bb2a621cfbdcceb7/>
+<csr-id-d89de66cdebb3b95dd6b48f8f136fa16e94e6733/>
+<csr-id-331b33bb8e666bb9e512291f683a9d71de7f930e/>
+<csr-id-2fa4d159022b20c5d646c927e160d55cbecd0168/>
+<csr-id-8c1e9b9e7c912cd28a017e492872722d64f7f46b/>
 
 ### Style
 
@@ -271,6 +299,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 </details>
 
 ## v0.1.0 (2021-10-16)
+
+<csr-id-7754dadc2af0b1f1b21eae3eb4904fb683371a8f/>
+<csr-id-1567062b323bba2ea115a2fe1c44b7d7a2653c5d/>
+<csr-id-0593d1dbdd56dbee90f7a08d535fb313d2c8e051/>
 
 ### Refactor
 
