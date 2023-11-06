@@ -12,7 +12,7 @@ fn into_bytes(response: ureq::Response) -> Result<Vec<u8>, ParseError> {
     let len = response
         .header("Content-Length")
         .and_then(|s| s.parse::<usize>().ok())
-        .ok_or(ParseError::MissingHeader("Content-Length"))?;
+        .unwrap_or(0);
 
     let mut bytes: Vec<u8> = Vec::with_capacity(len);
 
