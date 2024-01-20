@@ -191,14 +191,16 @@ impl Serialize for Organisation {
     {
         #[derive(Serialize)]
         #[serde(rename_all(serialize = "PascalCase"))]
-        #[allow(dead_code)]
+        #[allow(dead_code, clippy::upper_case_acronyms)]
         enum OrgSer {
+            VOMS,
             Hololive,
             Nijisanji,
             Independents,
         }
 
         let value = match *self {
+            Self::VOMS => OrgSer::VOMS,
             Self::Hololive => OrgSer::Hololive,
             Self::Nijisanji => OrgSer::Nijisanji,
             Self::Independents => OrgSer::Independents,

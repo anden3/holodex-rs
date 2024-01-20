@@ -527,6 +527,8 @@ pub enum Organisation {
     Hololive,
     /// VTubers from [Nijisanji](https://www.nijisanji.jp/en/)
     Nijisanji,
+    /// VTubers from [VOMS Project](https://voms.net/)
+    VOMS,
     /// VTubers not part of any organization.
     Independents,
     /// Organization not covered by other variants, please submit a pull request to add them!
