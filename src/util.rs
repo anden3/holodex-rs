@@ -26,7 +26,7 @@ pub fn validate_response<T>(response: ureq::Response) -> Result<T, ValidationErr
 where
     T: for<'de> Deserialize<'de> + std::fmt::Debug,
 {
-    if let status @ (400..=499 | 500..=599) = response.status() {
+    if let status @ (400..=599) = response.status() {
         let bytes = into_bytes(response).map_err(|e| {
             ValidationError::ServerError(ServerError::ErrorCodeWithValueParseError(status, e))
         })?;

@@ -177,6 +177,9 @@ impl FromStr for VideoId {
 pub struct ChannelId(pub(crate) String);
 
 #[cfg(feature = "sso")]
+// This is just a newtype around the smartstring type which has serde support, therefore there is
+// no unsafe here.
+#[allow(clippy::unsafe_derive_deserialize)]
 #[derive(Debug, Clone, PartialEq, Eq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
 /// The ID of a channel.
 pub struct ChannelId(pub(crate) smartstring::alias::String);
