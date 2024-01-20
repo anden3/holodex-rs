@@ -358,6 +358,7 @@ pub enum VideoSearchCondition {
 #[derive(Serialize, Debug, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
 /// Filtering criteria for comment searches.
 pub struct CommentSearch {
+    #[serde(rename = "comment")]
     /// Only return comments that include the given substring.
     pub search: String,
     #[serde(rename = "sort")]
