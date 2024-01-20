@@ -14,7 +14,9 @@ use std::{
 
 use chrono::{DateTime, Duration, Utc};
 use serde::{self, Deserialize, Serialize};
-use serde_with::{As, formats::CommaSeparator, DisplayFromStr, DurationSeconds, StringWithSeparator};
+use serde_with::{
+    formats::CommaSeparator, As, DisplayFromStr, DurationSeconds, StringWithSeparator,
+};
 
 use crate::util::is_default;
 
@@ -983,15 +985,12 @@ pub struct Channel {
 #[derive(Deserialize, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 /// Various statistics about a channel.
 pub struct ChannelStats {
-    #[serde(with = "serde_with::As::<Option<DisplayFromStr>>")]
     #[serde(default)]
     /// The amount of videos the channel has uploaded.
     pub video_count: Option<u32>,
-    #[serde(with = "serde_with::As::<Option<DisplayFromStr>>")]
     #[serde(default)]
     /// The amount of subscribers the channel has.
     pub subscriber_count: Option<u32>,
-    #[serde(with = "serde_with::As::<Option<DisplayFromStr>>")]
     #[serde(default)]
     /// The amount of views the channel has in total.
     pub view_count: Option<u32>,
