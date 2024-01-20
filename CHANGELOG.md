@@ -5,6 +5,53 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v0.3.3 (2024-01-20)
+
+### Chore
+
+ - <csr-id-3724c84ce58e5a9e739ae70d3554faadc663705c/> update dependencies
+
+### New Features
+
+ - <csr-id-0afd212db0e4012ab2330fc044c4d587f42a481f/> added VOMS to organisation enum
+
+### Bug Fixes
+
+ - <csr-id-b7d6c0c0f5b4cc8bedb58c4dfa797772b9bbb162/> comment search string was renamed
+ - <csr-id-f8e5b07aac0024e29bf91d839db70e211bf22601/> channel stats are now returned as ints
+
+### Other
+
+ - <csr-id-a6841a6c76927d2d71ddcc2c33c263023b54f9af/> create dependabot.yml
+
+### Style
+
+ - <csr-id-e4edf6507baa7fb02924cb05c8cfcb97f650bcfd/> fix clippy warnings
+
+### Commit Statistics
+
+<csr-read-only-do-not-edit/>
+
+ - 6 commits contributed to the release.
+ - 74 days passed between releases.
+ - 6 commits were understood as [conventional](https://www.conventionalcommits.org).
+ - 0 issues like '(#ID)' were seen in commit messages
+
+### Commit Details
+
+<csr-read-only-do-not-edit/>
+
+<details><summary>view details</summary>
+
+ * **Uncategorized**
+    - Create dependabot.yml ([`a6841a6`](https://github.com/anden3/holodex-rs/commit/a6841a6c76927d2d71ddcc2c33c263023b54f9af))
+    - Fix clippy warnings ([`e4edf65`](https://github.com/anden3/holodex-rs/commit/e4edf6507baa7fb02924cb05c8cfcb97f650bcfd))
+    - Added VOMS to organisation enum ([`0afd212`](https://github.com/anden3/holodex-rs/commit/0afd212db0e4012ab2330fc044c4d587f42a481f))
+    - Update dependencies ([`3724c84`](https://github.com/anden3/holodex-rs/commit/3724c84ce58e5a9e739ae70d3554faadc663705c))
+    - Comment search string was renamed ([`b7d6c0c`](https://github.com/anden3/holodex-rs/commit/b7d6c0c0f5b4cc8bedb58c4dfa797772b9bbb162))
+    - Channel stats are now returned as ints ([`f8e5b07`](https://github.com/anden3/holodex-rs/commit/f8e5b07aac0024e29bf91d839db70e211bf22601))
+</details>
+
 ## v0.3.2 (2023-11-06)
 
 <csr-id-f3f575a61d23e06a9e200b96e290e135f7fd8d51/>
@@ -43,7 +90,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <csr-read-only-do-not-edit/>
 
- - 9 commits contributed to the release over the course of 555 calendar days.
+ - 10 commits contributed to the release over the course of 555 calendar days.
  - 721 days passed between releases.
  - 8 commits were understood as [conventional](https://www.conventionalcommits.org).
  - 0 issues like '(#ID)' were seen in commit messages
@@ -55,6 +102,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 <details><summary>view details</summary>
 
  * **Uncategorized**
+    - Release holodex v0.3.2 ([`e16ce3a`](https://github.com/anden3/holodex-rs/commit/e16ce3ac79e172fdcae75b6501147495218c1cc7))
     - Release holodex v0.3.2 ([`412acb2`](https://github.com/anden3/holodex-rs/commit/412acb21a8817d7fe0cbab988661f70d7e19ea0e))
     - Add cargo-deny config ([`140eaed`](https://github.com/anden3/holodex-rs/commit/140eaeda09fc75396c8fe81d8facc9acfb2204f1))
     - Update cargo_with ([`f3f575a`](https://github.com/anden3/holodex-rs/commit/f3f575a61d23e06a9e200b96e290e135f7fd8d51))
