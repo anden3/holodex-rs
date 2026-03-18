@@ -15,7 +15,7 @@ use std::{
 use chrono::{DateTime, Duration, Utc};
 use serde::{self, Deserialize, Serialize};
 use serde_with::{
-    formats::CommaSeparator, As, DisplayFromStr, DurationSeconds, StringWithSeparator,
+    As, DisplayFromStr, DurationSeconds, StringWithSeparator, formats::CommaSeparator,
 };
 
 use crate::util::is_default;
@@ -970,7 +970,7 @@ pub struct Channel {
     /// Channel statistics.
     pub stats: ChannelStats,
 
-    #[serde(default)]
+    #[serde(with = "serde_with::As::<serde_with::DefaultOnNull>")]
     /// The top topics associated with the channel.
     pub top_topics: Vec<String>,
 
