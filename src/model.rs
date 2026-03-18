@@ -1030,6 +1030,8 @@ pub enum ChannelType {
     VTuber,
     /// A channel that takes content from a `VTuber` and edits it to make it more accessible.
     Subber,
+    /// On a non-indexed platform, like Twitch or similar.
+    External,
 }
 
 #[derive(Deserialize, Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
