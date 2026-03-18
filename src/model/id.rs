@@ -1,5 +1,5 @@
 //! Various types wrapping different IDs used in the API.
-#![allow(clippy::module_name_repetitions)]
+#![expect(clippy::module_name_repetitions)]
 
 use std::{convert::TryFrom, fmt::Display, ops::Deref, str::FromStr};
 
@@ -155,9 +155,9 @@ impl TryFrom<String> for VideoId {
 impl FromStr for VideoId {
     type Err = Error;
 
-    #[allow(clippy::unwrap_in_result)]
+    #[expect(clippy::unwrap_in_result)]
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        #[allow(clippy::expect_used)]
+        #[expect(clippy::expect_used)]
         let regex =
             Regex::new(r"[0-9A-Za-z_-]{10}[048AEIMQUYcgkosw]").expect("Video ID regex broke.");
 
@@ -177,9 +177,10 @@ impl FromStr for VideoId {
 pub struct ChannelId(pub(crate) String);
 
 #[cfg(feature = "sso")]
-// This is just a newtype around the smartstring type which has serde support, therefore there is
-// no unsafe here.
-#[allow(clippy::unsafe_derive_deserialize)]
+#[expect(
+    clippy::unsafe_derive_deserialize,
+    reason = "This is just a newtype around the smartstring type which has serde support, therefore there is no unsafe here."
+)]
 #[derive(Debug, Clone, PartialEq, Eq, Ord, PartialOrd, Hash, Serialize, Deserialize)]
 /// The ID of a channel.
 pub struct ChannelId(pub(crate) smartstring::alias::String);
@@ -424,7 +425,7 @@ impl ChannelId {
     }
 
     #[cfg(feature = "streams")]
-    #[allow(clippy::cast_possible_wrap, clippy::cast_possible_truncation)]
+    #[expect(clippy::cast_possible_wrap, clippy::cast_possible_truncation)]
     fn stream_channel_video_type(
         client: &Client,
         channel_id: ChannelId,
@@ -485,9 +486,9 @@ impl TryFrom<String> for ChannelId {
 impl FromStr for ChannelId {
     type Err = Error;
 
-    #[allow(clippy::unwrap_in_result)]
+    #[expect(clippy::unwrap_in_result)]
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        #[allow(clippy::expect_used)]
+        #[expect(clippy::expect_used)]
         let regex = Regex::new(r"UC[0-9a-zA-Z_-]{21}[AQgw]").expect("Channel ID regex broke.");
 
         Ok(Self(

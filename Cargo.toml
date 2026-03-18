@@ -25,7 +25,7 @@ optional = true
 
 [dependencies.chrono]
 version = "0.4.31"
-default_features = false
+default-features = false
 features = ["std", "serde"]
 
 [dependencies.futures-core]

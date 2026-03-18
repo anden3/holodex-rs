@@ -80,7 +80,6 @@ impl VideoFilterBuilder {
 
     #[inline]
     #[must_use]
-    #[allow(clippy::missing_const_for_fn)]
     /// Only return videos from the given channel.
     pub fn channel_id(mut self, channel_id: ChannelId) -> Self {
         self.filter.channel_id = Some(channel_id);
@@ -89,7 +88,6 @@ impl VideoFilterBuilder {
 
     #[inline]
     #[must_use]
-    #[allow(clippy::missing_const_for_fn)]
     /// Only return videos with any of the given IDs.
     pub fn id(mut self, ids: &[VideoId]) -> Self {
         self.filter.id = ids.to_vec();
@@ -98,7 +96,6 @@ impl VideoFilterBuilder {
 
     #[inline]
     #[must_use]
-    #[allow(clippy::missing_const_for_fn)]
     /// Only return videos from a channel part of the given organisation.
     pub fn organisation(mut self, org: Organisation) -> Self {
         self.filter.org = Some(org);
@@ -123,7 +120,6 @@ impl VideoFilterBuilder {
 
     #[inline]
     #[must_use]
-    #[allow(clippy::missing_const_for_fn)]
     /// Only return videos mentioning the given channel.
     pub fn mentioned_channel_id(mut self, channel_id: ChannelId) -> Self {
         self.filter.mentioned_channel_id = Some(channel_id);
@@ -164,7 +160,6 @@ impl VideoFilterBuilder {
 
     #[inline]
     #[must_use]
-    #[allow(clippy::missing_const_for_fn)]
     /// Consume the builder, returning the constructed filter.
     pub fn build(self) -> VideoFilter {
         self.filter
@@ -231,7 +226,6 @@ impl ChannelFilterBuilder {
 
     #[inline]
     #[must_use]
-    #[allow(clippy::missing_const_for_fn)]
     /// Only return channels part of the given organisation.
     pub fn organisation(mut self, organisation: Organisation) -> Self {
         self.filter.organisation = Some(organisation);
@@ -334,7 +328,6 @@ impl VideoSearchBuilder {
 
     #[inline]
     #[must_use]
-    #[allow(clippy::missing_const_for_fn)]
     /// Only return videos that involve all of the given channels.
     ///
     /// If two or more channel IDs are specified, only collabs with all of them will be returned,
@@ -346,7 +339,6 @@ impl VideoSearchBuilder {
 
     #[inline]
     #[must_use]
-    #[allow(clippy::missing_const_for_fn)]
     /// Only return videos from channels in the given organisation, or are clips from a channel in the organisation.
     pub fn organisations(mut self, organisations: &[Organisation]) -> Self {
         self.search.organisations = organisations.to_vec();
@@ -379,7 +371,6 @@ impl VideoSearchBuilder {
 
     #[inline]
     #[must_use]
-    #[allow(clippy::missing_const_for_fn)]
     /// Consume the builder, returning the constructed search.
     pub fn build(self) -> VideoSearch {
         self.search
@@ -447,7 +438,6 @@ impl CommentSearchBuilder {
 
     #[inline]
     #[must_use]
-    #[allow(clippy::missing_const_for_fn)]
     /// Only return comments on videos that involve all of the given channels.
     ///
     /// If two or more channel IDs are specified,
@@ -461,7 +451,6 @@ impl CommentSearchBuilder {
 
     #[inline]
     #[must_use]
-    #[allow(clippy::missing_const_for_fn)]
     /// Only return comments on videos from channels in the given organisation,
     /// or that are clips from a channel in the organisation.
     pub fn organisations(mut self, organisations: &[Organisation]) -> Self {
@@ -497,7 +486,6 @@ impl CommentSearchBuilder {
 
     #[inline]
     #[must_use]
-    #[allow(clippy::missing_const_for_fn)]
     /// Consume the builder, returning the constructed search.
     pub fn build(self) -> CommentSearch {
         self.search

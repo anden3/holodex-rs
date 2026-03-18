@@ -13,7 +13,6 @@ impl Serialize for Language {
         S: Serializer,
     {
         #[derive(Serialize)]
-        #[allow(dead_code)]
         enum LangSer {
             #[serde(rename(serialize = "all"))]
             All,
@@ -50,7 +49,7 @@ impl Serialize for Language {
 }
 
 impl Display for Language {
-    #[allow(clippy::wildcard_enum_match_arm)]
+    #[expect(clippy::wildcard_enum_match_arm)]
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         use serde::Serialize as _;
 
@@ -67,7 +66,6 @@ impl<'de> Deserialize<'de> for Language {
         D: Deserializer<'de>,
     {
         #[derive(Deserialize)]
-        #[allow(dead_code)]
         enum LangDe {
             #[serde(rename(deserialize = "all"))]
             All,
@@ -139,7 +137,6 @@ impl<'de> Deserialize<'de> for Organisation {
     {
         #[derive(Deserialize)]
         #[serde(rename_all(deserialize = "PascalCase"))]
-        #[allow(dead_code)]
         enum OrgDe {
             Hololive,
             Nijisanji,
@@ -191,7 +188,7 @@ impl Serialize for Organisation {
     {
         #[derive(Serialize)]
         #[serde(rename_all(serialize = "PascalCase"))]
-        #[allow(dead_code, clippy::upper_case_acronyms)]
+        #[expect(clippy::upper_case_acronyms)]
         enum OrgSer {
             VOMS,
             Hololive,
@@ -212,7 +209,7 @@ impl Serialize for Organisation {
 }
 
 impl Display for Organisation {
-    #[allow(clippy::wildcard_enum_match_arm)]
+    #[expect(clippy::wildcard_enum_match_arm)]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match *self {
             Self::Other(ref s) => write!(f, "{s}"),

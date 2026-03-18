@@ -1,4 +1,3 @@
-#![allow(unknown_lints)]
 #![deny(
     missing_docs,
     missing_debug_implementations,
@@ -37,7 +36,6 @@
     clippy::rest_pat_in_fully_bound_structs,
     clippy::semicolon_if_nothing_returned,
     clippy::str_to_string,
-    clippy::string_to_string,
     clippy::todo,
     clippy::unimplemented,
     clippy::unneeded_field_pattern,
@@ -47,11 +45,6 @@
     clippy::verbose_file_reads,
     clippy::wildcard_enum_match_arm,
     clippy::wrong_self_convention
-)]
-#![allow(
-    clippy::non_ascii_literal,
-    clippy::cargo_common_metadata,
-    clippy::multiple_crate_versions
 )]
 
 //! Rust wrapper for the Holodex v2 API.

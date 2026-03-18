@@ -580,7 +580,7 @@ impl Client {
             .post(&format!("{}/search/videoSearch", Self::ENDPOINT))
             .set("x-apikey", &self.token)
             .send_json(
-                ureq::serde_json::to_value(search_parameters)
+                serde_json::to_value(search_parameters)
                     .map_err(|e| Error::FilterCreationError(e.to_string()))?,
             )
             .map_err(|e| Error::ApiRequestFailed {
@@ -638,7 +638,7 @@ impl Client {
             .post(&format!("{}/search/commentSearch", Self::ENDPOINT))
             .set("x-apikey", &self.token)
             .send_json(
-                ureq::serde_json::to_value(search_parameters)
+                serde_json::to_value(search_parameters)
                     .map_err(|e| Error::FilterCreationError(e.to_string()))?,
             )
             .map_err(|e| Error::ApiRequestFailed {
@@ -718,7 +718,7 @@ impl Client {
     }
 
     #[cfg(feature = "streams")]
-    #[allow(clippy::cast_possible_wrap, clippy::cast_possible_truncation)]
+    #[expect(clippy::cast_possible_wrap, clippy::cast_possible_truncation)]
     fn stream_endpoint<'a>(
         http: &'a ureq::Agent,
         token: &'a str,

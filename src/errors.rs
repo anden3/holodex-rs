@@ -4,7 +4,7 @@ use quick_error::quick_error;
 
 quick_error! {
     #[derive(Debug)]
-    #[allow(missing_docs)]
+    #[expect(missing_docs)]
     /// Errors that can occur when interacting with the Holodex API.
     pub enum Error {
         /// The API token provided to the client is invalid.

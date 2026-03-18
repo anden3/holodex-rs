@@ -1,5 +1,5 @@
 //! Structs modelling the data types used by the API.
-#![allow(clippy::use_self)]
+#![expect(clippy::use_self)]
 
 pub mod builders;
 pub mod id;
@@ -107,7 +107,7 @@ impl Default for VideoFilter {
 }
 
 impl Display for VideoFilter {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,
             "{} {{
@@ -137,7 +137,7 @@ impl Display for VideoFilter {
                 .join(", "),
             self.org
                 .as_ref()
-                .map_or("None".to_owned(), ToString::to_string),
+                .map_or_else(|| "None".to_owned(), ToString::to_string),
             self.include
                 .iter()
                 .map(ToString::to_string)
@@ -164,11 +164,11 @@ impl Display for VideoFilter {
                 .join(", "),
             self.topic
                 .as_ref()
-                .map_or("None".to_owned(), ToString::to_string),
+                .map_or_else(|| "None".to_owned(), ToString::to_string),
             self.video_type,
             self.from
                 .as_ref()
-                .map_or("None".to_owned(), ToString::to_string),
+                .map_or_else(|| "None".to_owned(), ToString::to_string),
         )
     }
 }
@@ -218,7 +218,7 @@ impl Default for ChannelVideoFilter {
 }
 
 impl Display for ChannelVideoFilter {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,
             "{} {{ include: {}, lang: {}, paginated: {}, limit: {}, offset: {} }}",
@@ -519,7 +519,6 @@ impl Display for Order {
 }
 
 #[non_exhaustive]
-#[allow(clippy::use_self)]
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 /// Which organization the VTuber(s) are a part of.
 pub enum Organisation {
@@ -711,7 +710,6 @@ impl Display for ChannelVideoType {
 }
 
 #[non_exhaustive]
-#[allow(dead_code)]
 #[derive(Serialize, Deserialize, Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[serde(rename_all = "snake_case")]
 /// The status of the [`Video`].
@@ -787,7 +785,6 @@ impl<T> PaginatedResult<T> {
 
     #[must_use]
     #[inline]
-    #[allow(clippy::missing_const_for_fn)]
     /// Convert response into a [`Vec<T>`].
     pub fn into_items(self) -> Vec<T> {
         match self {
@@ -1025,7 +1022,6 @@ impl VideoChannel {
 }
 
 #[non_exhaustive]
-#[allow(dead_code)]
 #[derive(Deserialize, Serialize, Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[serde(rename_all = "lowercase")]
 /// Different types of channels.
@@ -1106,7 +1102,7 @@ pub struct Comment {
 }
 
 impl Display for Comment {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.message)
     }
 }
@@ -1153,7 +1149,7 @@ impl std::hash::Hash for Song {
 }
 
 impl Display for Song {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{} by {}", self.name, self.artist)
     }
 }
