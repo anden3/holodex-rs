@@ -869,6 +869,9 @@ pub struct Video {
     #[serde(alias = "channel_id")]
     /// The channel the video was uploaded by.
     pub channel: VideoChannel,
+    #[serde(with = "serde_with::As::<serde_with::DefaultOnNull>")]
+    /// Any channels that were mentioned in this video's description.
+    pub mentions: Vec<ChannelMin>,
 }
 
 impl PartialEq for Video {
@@ -1053,9 +1056,6 @@ pub struct VideoFull {
     #[serde(default)]
     /// Any videos that refer to this video and go live or are uploaded around the same time.
     pub simulcasts: Vec<Video>,
-    #[serde(default)]
-    /// Any channels that were mentioned in this video's description.
-    pub mentions: Vec<ChannelMin>,
 
     #[serde(default)]
     #[serde(rename = "songcount")]
