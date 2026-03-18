@@ -250,7 +250,7 @@ impl Client {
         }
         let res = request.call().map_err(|e| Error::ApiRequestFailed {
             endpoint: "/channels/{channel_id}/{type}",
-            source: e,
+            source: Box::new(e),
         })?;
 
         let videos = validate_response(res).map_err(|e| Error::InvalidResponse {
@@ -311,7 +311,7 @@ impl Client {
             .call()
             .map_err(|e| Error::ApiRequestFailed {
                 endpoint: "/users/live",
-                source: e,
+                source: Box::new(e),
             })?;
 
         let videos = validate_response(res).map_err(|e| Error::InvalidResponse {
@@ -355,7 +355,7 @@ impl Client {
             .call()
             .map_err(|e| Error::ApiRequestFailed {
                 endpoint: "/channels/{channel_id}",
-                source: e,
+                source: Box::new(e),
             })?;
 
         let channel = validate_response(res).map_err(|e| Error::InvalidResponse {
@@ -421,7 +421,7 @@ impl Client {
 
         let res = request.call().map_err(|e| Error::ApiRequestFailed {
             endpoint: "/channels",
-            source: e,
+            source: Box::new(e),
         })?;
 
         let channels = validate_response(res).map_err(|e| Error::InvalidResponse {
@@ -585,7 +585,7 @@ impl Client {
             )
             .map_err(|e| Error::ApiRequestFailed {
                 endpoint: "/search/videoSearch",
-                source: e,
+                source: Box::new(e),
             })?;
 
         let videos = validate_response(res).map_err(|e| Error::InvalidResponse {
@@ -643,7 +643,7 @@ impl Client {
             )
             .map_err(|e| Error::ApiRequestFailed {
                 endpoint: "/search/commentSearch",
-                source: e,
+                source: Box::new(e),
             })?;
 
         let videos_with_comments = validate_response(res).map_err(|e| Error::InvalidResponse {
@@ -674,7 +674,7 @@ impl Client {
 
         let res = request.call().map_err(|e| Error::ApiRequestFailed {
             endpoint: "/videos/{video_id}",
-            source: e,
+            source: Box::new(e),
         })?;
 
         let video = validate_response(res).map_err(|e| Error::InvalidResponse {
@@ -706,7 +706,7 @@ impl Client {
 
         let res = request.call().map_err(|e| Error::ApiRequestFailed {
             endpoint,
-            source: e,
+            source: Box::new(e),
         })?;
 
         let videos = validate_response(res).map_err(|e| Error::InvalidResponse {

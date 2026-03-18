@@ -12,12 +12,12 @@ quick_error! {
             display("API token contains invalid characters.")
         }
         /// An error occurred while creating the HTTP client.
-        HttpClientCreationError(err: ureq::Error) {
+        HttpClientCreationError(err: Box<ureq::Error>) {
             display("Error creating HTTP client: {:?}", err)
             source(err)
         }
         /// An error occurred while sending a request to the API.
-        ApiRequestFailed { source: ureq::Error, endpoint: &'static str } {
+        ApiRequestFailed { source: Box<ureq::Error>, endpoint: &'static str } {
             display("Error sending request to {}: {:?}", endpoint, source)
             source(source)
         }
