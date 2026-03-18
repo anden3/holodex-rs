@@ -1,9 +1,9 @@
 use crate::{
     errors::Error,
     model::{
-        id::{ChannelId, VideoId},
         Channel, ChannelFilter, ChannelVideoFilter, ChannelVideoType, CommentSearch, Language,
         PaginatedResult, Video, VideoFilter, VideoFull, VideoSearch,
+        id::{ChannelId, VideoId},
     },
     util::validate_response,
 };
@@ -42,7 +42,11 @@ impl Client {
     ///
     /// Will return [`Error::HttpClientCreationError`] if a TLS backend cannot be initialized, or the resolver cannot load the system configuration.
     pub fn new(api_token: &str) -> Result<Self, Error> {
-        let http = ureq::builder().user_agent(Self::USER_AGENT).build();
+        let http = ureq::Agent::new_with_config(
+            ureq::Agent::config_builder()
+                .user_agent(Self::USER_AGENT)
+                .build(),
+        );
 
         Ok(Self {
             http,
@@ -243,7 +247,7 @@ impl Client {
                 channel_id,
                 video_type
             ))
-            .set("x-apikey", &self.token);
+            .header("x-apikey", &self.token);
 
         for (key, value) in query_pairs {
             request = request.query(key, &value);
@@ -299,10 +303,10 @@ impl Client {
         let res = self
             .http
             .get(&format!("{}/users/live", Self::ENDPOINT))
-            .set("x-apikey", &self.token)
+            .header("x-apikey", &self.token)
             .query(
                 "channels",
-                &channel_ids
+                channel_ids
                     .iter()
                     .map(|c| &*c.0)
                     .collect::<Vec<&str>>()
@@ -351,7 +355,7 @@ impl Client {
         let res = self
             .http
             .get(&format!("{}/channels/{}", Self::ENDPOINT, channel_id))
-            .set("x-apikey", &self.token)
+            .header("x-apikey", &self.token)
             .call()
             .map_err(|e| Error::ApiRequestFailed {
                 endpoint: "/channels/{channel_id}",
@@ -413,7 +417,7 @@ impl Client {
         let mut request = self
             .http
             .get(&format!("{}/channels", Self::ENDPOINT))
-            .set("x-apikey", &self.token);
+            .header("x-apikey", &self.token);
 
         for (key, value) in query_pairs {
             request = request.query(key, &value);
@@ -578,7 +582,7 @@ impl Client {
         let res = self
             .http
             .post(&format!("{}/search/videoSearch", Self::ENDPOINT))
-            .set("x-apikey", &self.token)
+            .header("x-apikey", &self.token)
             .send_json(
                 serde_json::to_value(search_parameters)
                     .map_err(|e| Error::FilterCreationError(e.to_string()))?,
@@ -636,7 +640,7 @@ impl Client {
         let res = self
             .http
             .post(&format!("{}/search/commentSearch", Self::ENDPOINT))
-            .set("x-apikey", &self.token)
+            .header("x-apikey", &self.token)
             .send_json(
                 serde_json::to_value(search_parameters)
                     .map_err(|e| Error::FilterCreationError(e.to_string()))?,
@@ -666,7 +670,7 @@ impl Client {
         let mut request = self
             .http
             .get(&format!("{}/videos/{}", Self::ENDPOINT, video_id))
-            .set("x-apikey", &self.token);
+            .header("x-apikey", &self.token);
 
         for (key, value) in query_pairs {
             request = request.query(key, &value);
@@ -698,7 +702,7 @@ impl Client {
 
         let mut request = http
             .get(&format!("{}{}", Self::ENDPOINT, endpoint))
-            .set("x-apikey", token);
+            .header("x-apikey", token);
 
         for (key, value) in query_pairs {
             request = request.query(key, &value);

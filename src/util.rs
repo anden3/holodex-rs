@@ -8,25 +8,29 @@ pub fn is_default<T: Default + PartialEq>(t: &T) -> bool {
     t == &T::default()
 }
 
-fn into_bytes(response: ureq::Response) -> Result<Vec<u8>, ParseError> {
+fn into_bytes(response: ureq::http::Response<ureq::Body>) -> Result<Vec<u8>, ParseError> {
     let len = response
-        .header("Content-Length")
+        .headers()
+        .get("Content-Length")
+        .and_then(|s| s.to_str().ok())
         .and_then(|s| s.parse::<usize>().ok())
         .unwrap_or(0);
 
     let mut bytes: Vec<u8> = Vec::with_capacity(len);
 
-    match response.into_reader().read_to_end(&mut bytes) {
+    match response.into_body().into_reader().read_to_end(&mut bytes) {
         Ok(_) => Ok(bytes),
         Err(e) => Err(ParseError::ResponseDecodeError(e)),
     }
 }
 
-pub fn validate_response<T>(response: ureq::Response) -> Result<T, ValidationError>
+pub fn validate_response<T>(
+    response: ureq::http::Response<ureq::Body>,
+) -> Result<T, ValidationError>
 where
     T: for<'de> Deserialize<'de> + std::fmt::Debug,
 {
-    if let status @ (400..=599) = response.status() {
+    if let status @ (400..=599) = response.status().as_u16() {
         let bytes = into_bytes(response).map_err(|e| {
             ValidationError::ServerError(ServerError::ErrorCodeWithValueParseError(status, e))
         })?;
