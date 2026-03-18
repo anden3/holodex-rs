@@ -204,7 +204,7 @@ impl Client {
     /// let english_clips = client.videos_from_channel(&pekora_ch_id, ChannelVideoType::Clips, &parameters)?;
     ///
     /// for clip in english_clips.items() {
-    ///     println!("{}", clip.title);
+    ///     println!("{}", clip.video.title);
     /// }
     /// # Ok::<(), holodex::errors::Error>(())
     /// ```
@@ -218,7 +218,7 @@ impl Client {
         channel_id: &ChannelId,
         video_type: ChannelVideoType,
         parameters: &ChannelVideoFilter,
-    ) -> Result<PaginatedResult<Video>, Error> {
+    ) -> Result<PaginatedResult<VideoFull>, Error> {
         let query_string = serde_urlencoded::to_string(parameters)
             .map_err(|e| Error::FilterCreationError(e.to_string()))?;
         let query_pairs: Vec<(&str, String)> = serde_urlencoded::from_str(&query_string)

@@ -7,11 +7,11 @@ use regex::Regex;
 use serde::{self, Deserialize, Serialize};
 
 use crate::{
+    Client,
     errors::Error,
     model::{
         Channel, ChannelVideoFilter, ChannelVideoType, Language, PaginatedResult, Video, VideoFull,
     },
-    Client,
 };
 
 #[cfg(feature = "streams")]
@@ -219,8 +219,8 @@ impl ChannelId {
     /// let channel_id: ChannelId = "UCHsx4Hqa-1ORjQTh9TYDhww".parse()?;
     /// let videos = channel_id.videos(&client)?;
     ///
-    /// for video in videos {
-    ///     println!("{}", video.title);
+    /// for v in videos {
+    ///     println!("{}", v.video.title);
     /// }
     /// # Ok::<(), holodex::errors::Error>(())
     /// ```
@@ -229,7 +229,7 @@ impl ChannelId {
     /// Will return [`Error::ApiRequestFailed`] if sending the API request fails.
     ///
     /// Will return [`Error::InvalidResponse`] if the API returned a faulty response or server error.
-    pub fn videos(&self, client: &Client) -> Result<PaginatedResult<Video>, Error> {
+    pub fn videos(&self, client: &Client) -> Result<PaginatedResult<VideoFull>, Error> {
         client.videos_from_channel(
             self,
             ChannelVideoType::Videos,
@@ -258,13 +258,16 @@ impl ChannelId {
     /// let stream = channel_id.video_stream(&client).take(200);
     /// pin_mut!(stream);
     ///
-    /// while let Some(video) = stream.try_next().await? {
-    ///     println!("{}", video.title);
+    /// while let Some(v) = stream.try_next().await? {
+    ///     println!("{}", v.video.title);
     /// }
     /// # Ok(())
     /// # })
     /// # }
-    pub fn video_stream(self, client: &Client) -> impl Stream<Item = Result<Video, Error>> + '_ {
+    pub fn video_stream(
+        self,
+        client: &Client,
+    ) -> impl Stream<Item = Result<VideoFull, Error>> + '_ {
         Self::stream_channel_video_type(client, self, ChannelVideoType::Videos)
     }
 
@@ -283,7 +286,7 @@ impl ChannelId {
     /// let clips = channel_id.clips(&client)?;
     ///
     /// for clip in clips {
-    ///     println!("{}", clip.title);
+    ///     println!("{}", clip.video.title);
     /// }
     /// # Ok::<(), holodex::errors::Error>(())
     /// ```
@@ -292,7 +295,7 @@ impl ChannelId {
     /// Will return [`Error::ApiRequestFailed`] if sending the API request fails.
     ///
     /// Will return [`Error::InvalidResponse`] if the API returned a faulty response or server error.
-    pub fn clips(&self, client: &Client) -> Result<PaginatedResult<Video>, Error> {
+    pub fn clips(&self, client: &Client) -> Result<PaginatedResult<VideoFull>, Error> {
         client.videos_from_channel(
             self,
             ChannelVideoType::Clips,
@@ -322,12 +325,12 @@ impl ChannelId {
     /// pin_mut!(stream);
     ///
     /// while let Some(clip) = stream.try_next().await? {
-    ///     println!("{}", clip.title);
+    ///     println!("{}", clip.video.title);
     /// }
     /// # Ok(())
     /// # })
     /// # }
-    pub fn clip_stream(self, client: &Client) -> impl Stream<Item = Result<Video, Error>> + '_ {
+    pub fn clip_stream(self, client: &Client) -> impl Stream<Item = Result<VideoFull, Error>> + '_ {
         Self::stream_channel_video_type(client, self, ChannelVideoType::Clips)
     }
 
@@ -346,7 +349,7 @@ impl ChannelId {
     /// let collabs = channel_id.collabs(&client)?;
     ///
     /// for collab in collabs {
-    ///     println!("{}", collab.title);
+    ///     println!("{}", collab.video.title);
     /// }
     /// # Ok::<(), holodex::errors::Error>(())
     /// ```
@@ -355,7 +358,7 @@ impl ChannelId {
     /// Will return [`Error::ApiRequestFailed`] if sending the API request fails.
     ///
     /// Will return [`Error::InvalidResponse`] if the API returned a faulty response or server error.
-    pub fn collabs(&self, client: &Client) -> Result<PaginatedResult<Video>, Error> {
+    pub fn collabs(&self, client: &Client) -> Result<PaginatedResult<VideoFull>, Error> {
         client.videos_from_channel(
             self,
             ChannelVideoType::Clips,
@@ -385,12 +388,15 @@ impl ChannelId {
     /// pin_mut!(stream);
     ///
     /// while let Some(collab) = stream.try_next().await? {
-    ///     println!("{}", collab.title);
+    ///     println!("{}", collab.video.title);
     /// }
     /// # Ok(())
     /// # })
     /// # }
-    pub fn collab_stream(self, client: &Client) -> impl Stream<Item = Result<Video, Error>> + '_ {
+    pub fn collab_stream(
+        self,
+        client: &Client,
+    ) -> impl Stream<Item = Result<VideoFull, Error>> + '_ {
         Self::stream_channel_video_type(client, self, ChannelVideoType::Collabs)
     }
 
@@ -400,7 +406,7 @@ impl ChannelId {
         client: &Client,
         channel_id: ChannelId,
         video_type: ChannelVideoType,
-    ) -> impl Stream<Item = Result<Video, Error>> + '_ {
+    ) -> impl Stream<Item = Result<VideoFull, Error>> + '_ {
         async_stream::try_stream! {
             const CHUNK_SIZE: u32 = 50;
 
