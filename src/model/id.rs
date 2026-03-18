@@ -36,9 +36,6 @@ impl VideoId {
     /// ```rust
     /// use holodex::model::{id::VideoId, Language};
     ///
-    /// # if std::env::var_os("HOLODEX_API_TOKEN").is_none() {
-    /// #   std::env::set_var("HOLODEX_API_TOKEN", "my-api-token");
-    /// # }
     /// let token = std::env::var("HOLODEX_API_TOKEN").unwrap();
     /// let client = holodex::Client::new(&token)?;
     ///
@@ -67,9 +64,6 @@ impl VideoId {
     /// ```rust
     /// use holodex::model::id::VideoId;
     ///
-    /// # if std::env::var_os("HOLODEX_API_TOKEN").is_none() {
-    /// #   std::env::set_var("HOLODEX_API_TOKEN", "my-api-token");
-    /// # }
     /// let token = std::env::var("HOLODEX_API_TOKEN").unwrap();
     /// let client = holodex::Client::new(&token)?;
     ///
@@ -100,9 +94,6 @@ impl VideoId {
     /// ```rust
     /// use holodex::model::{id::VideoId, Language};
     ///
-    /// # if std::env::var_os("HOLODEX_API_TOKEN").is_none() {
-    /// #   std::env::set_var("HOLODEX_API_TOKEN", "my-api-token");
-    /// # }
     /// let token = std::env::var("HOLODEX_API_TOKEN").unwrap();
     /// let client = holodex::Client::new(&token)?;
     ///
@@ -194,9 +185,6 @@ impl ChannelId {
     /// ```rust
     /// use holodex::model::id::ChannelId;
     ///
-    /// # if std::env::var_os("HOLODEX_API_TOKEN").is_none() {
-    /// #   std::env::set_var("HOLODEX_API_TOKEN", "my-api-token");
-    /// # }
     /// let token = std::env::var("HOLODEX_API_TOKEN").unwrap();
     /// let client = holodex::Client::new(&token)?;
     ///
@@ -225,9 +213,6 @@ impl ChannelId {
     /// ```rust
     /// use holodex::model::id::ChannelId;
     ///
-    /// # if std::env::var_os("HOLODEX_API_TOKEN").is_none() {
-    /// #   std::env::set_var("HOLODEX_API_TOKEN", "my-api-token");
-    /// # }
     /// let token = std::env::var("HOLODEX_API_TOKEN").unwrap();
     /// let client = holodex::Client::new(&token)?;
     ///
@@ -265,9 +250,6 @@ impl ChannelId {
     /// use holodex::model::id::ChannelId;
     /// use futures::{self, pin_mut, StreamExt, TryStreamExt};
     ///
-    /// # if std::env::var_os("HOLODEX_API_TOKEN").is_none() {
-    /// #   std::env::set_var("HOLODEX_API_TOKEN", "my-api-token");
-    /// # }
     /// let token = std::env::var("HOLODEX_API_TOKEN").unwrap();
     /// let client = holodex::Client::new(&token)?;
     ///
@@ -294,9 +276,6 @@ impl ChannelId {
     /// ```rust
     /// use holodex::model::id::ChannelId;
     ///
-    /// # if std::env::var_os("HOLODEX_API_TOKEN").is_none() {
-    /// #   std::env::set_var("HOLODEX_API_TOKEN", "my-api-token");
-    /// # }
     /// let token = std::env::var("HOLODEX_API_TOKEN").unwrap();
     /// let client = holodex::Client::new(&token)?;
     ///
@@ -334,9 +313,6 @@ impl ChannelId {
     /// use holodex::model::id::ChannelId;
     /// use futures::{self, pin_mut, StreamExt, TryStreamExt};
     ///
-    /// # if std::env::var_os("HOLODEX_API_TOKEN").is_none() {
-    /// #   std::env::set_var("HOLODEX_API_TOKEN", "my-api-token");
-    /// # }
     /// let token = std::env::var("HOLODEX_API_TOKEN").unwrap();
     /// let client = holodex::Client::new(&token)?;
     ///
@@ -363,9 +339,6 @@ impl ChannelId {
     /// ```rust
     /// use holodex::model::id::ChannelId;
     ///
-    /// # if std::env::var_os("HOLODEX_API_TOKEN").is_none() {
-    /// #   std::env::set_var("HOLODEX_API_TOKEN", "my-api-token");
-    /// # }
     /// let token = std::env::var("HOLODEX_API_TOKEN").unwrap();
     /// let client = holodex::Client::new(&token)?;
     ///
@@ -403,9 +376,6 @@ impl ChannelId {
     /// use holodex::model::id::ChannelId;
     /// use futures::{self, pin_mut, StreamExt, TryStreamExt};
     ///
-    /// # if std::env::var_os("HOLODEX_API_TOKEN").is_none() {
-    /// #   std::env::set_var("HOLODEX_API_TOKEN", "my-api-token");
-    /// # }
     /// let token = std::env::var("HOLODEX_API_TOKEN").unwrap();
     /// let client = holodex::Client::new(&token)?;
     ///
